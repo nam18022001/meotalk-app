@@ -1,0 +1,23 @@
+import fontsLoaded from './mainFont';
+
+function GlobalStyles() {
+  return {
+    fonts: {
+      fontRegular: 'font-regular',
+      fontBlack: 'font-black',
+      fontBold: 'font-bold',
+      fontExtraLight: 'font-extralight',
+      fontLight: 'font-light',
+      fontSemiBold: 'font-semibold',
+    },
+    colors: {
+      primary: '#4d9ac0',
+      primaryOpacity: '#4d9ac0a2',
+      powderGrey: 'rgba(22, 24, 35, 0.5)',
+      powderGreyOpacity: 'rgba(22, 24, 35, 0.1)',
+      seenColor: 'rgba(22, 24, 35, 0.441)',
+    },
+  };
+}
+export { fontsLoaded };
+export default GlobalStyles();
