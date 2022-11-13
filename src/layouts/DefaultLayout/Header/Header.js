@@ -10,6 +10,7 @@ function Header({ title, navigation }) {
       <AppBar
         color="#55aac0"
         tintColor="#222041"
+        titleStyle={{ fontFamily: GlobalStyles.fonts.fontBold }}
         title={title}
         trailing={(props) => (
           <HStack>

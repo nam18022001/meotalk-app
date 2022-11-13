@@ -32,7 +32,7 @@ function DefaultLayout() {
               return <Header title={route.name} navigation={navigation} />;
             },
             tabBarActiveBackgroundColor: 'rgba(34,34,34,0.15)',
-            tabBarLabelStyle: { fontFamily: 'font-semibold' },
+            tabBarLabelStyle: { fontFamily: GlobalStyles.fonts.fontSemiBold },
             tabBarItemStyle: { borderRadius: 10, marginLeft: 5, marginRight: 5 },
 
             tabBarIcon: ({ color, size }) => {

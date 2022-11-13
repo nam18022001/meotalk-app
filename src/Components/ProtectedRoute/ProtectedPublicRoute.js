@@ -1,11 +1,18 @@
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useLayoutEffect } from 'react';
 
 function ProtectedPublicRoute({ user, children, navigation }) {
   // return !user ? children : <Navigate to={config.routes.home} />;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (user) {
-      navigation.navigate('Home');
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: 'Home',
+          },
+        ],
+      });
     }
   }, [user]);
   return children;

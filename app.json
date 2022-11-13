@@ -4,7 +4,7 @@
     "slug": "meotalk-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "plugins": ["@react-native-google-signin/google-signin"],
+    "plugins": [["expo-image-picker", "@react-native-google-signin/google-signin"]],
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
@@ -15,9 +15,7 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
