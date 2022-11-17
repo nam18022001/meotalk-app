@@ -1,7 +1,7 @@
 import { AppBar, Avatar, IconButton } from '@react-native-material/core';
 import { StyleSheet, Text, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import GlobalStyles from '../../../Components/GlobalStyles/GlobalStyles';
+import GlobalStyles from '../../../Components/GlobalStyles';
 
 function HeaderChat({ navigation, userFriend }) {
   return (
@@ -9,7 +9,7 @@ function HeaderChat({ navigation, userFriend }) {
       titleContentStyle={{ marginLeft: -15 }}
       title={
         <View style={styles.headerInfo}>
-          <Avatar style={styles.avatarFriend} size={50} image={{ uri: userFriend.photoURL }} />
+          <Avatar style={styles.avatarFriend} size={50} image={{ uri: userFriend.photoUrl }} />
           <Text numberOfLines={1} style={styles.nameFriend}>
             {userFriend.displayName}
           </Text>

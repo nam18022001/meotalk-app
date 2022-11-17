@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Platform, SafeAreaView, StatusBar, StyleSheet } from 'react-native';
-import GlobalStyles from '../../Components/GlobalStyles/GlobalStyles';
+import GlobalStyles from '../../Components/GlobalStyles';
 
 function LoginLayout({ children }) {
   return (

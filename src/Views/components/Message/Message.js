@@ -1,15 +1,22 @@
-import { Avatar } from '@react-native-material/core';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Avatar } from '@react-native-material/core';
+import { useState } from 'react';
+import { Dimensions, Image, StyleSheet, Text, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import GlobalStyles from '../../../Components/GlobalStyles/GlobalStyles';
-import useAuthContext from '../../../hooks/useAuthContext';
+import GlobalStyles from '../../../Components/GlobalStyles';
 
-function Message({ data = 'Error Text message', type = 'message', own, isRead, seen, seenImg }) {
-  const currentUser = useAuthContext();
+function Message({ data = 'Error Text message', type = 'message', own, isRead, seen, seenImg, marginBottom }) {
+  const [loadingImg, setLoadingImg] = useState(false);
+
   return (
-    <View style={[styles.wrapper, { justifyContent: own ? 'flex-end' : 'flex-start' }]}>
-      {!own && <Avatar style={styles.avatarFriend} size={28} image={{ uri: currentUser.photoURL }} />}
+    <View
+      style={[
+        styles.wrapper,
+        { justifyContent: own ? 'flex-end' : 'flex-start' },
+        marginBottom && { marginBottom: 10 },
+      ]}
+    >
+      {!own && <Avatar style={styles.avatarFriend} size={28} image={{ uri: seenImg, cache: 'force-cache' }} />}
       <View
         style={[
           type === 'message' ? styles.content : styles.contentImage,
@@ -18,25 +25,43 @@ function Message({ data = 'Error Text message', type = 'message', own, isRead, s
         ]}
       >
         {type === 'image' ? (
-          <Image
-            resizeMode="contain"
-            size
-            style={styles.image}
-            source={{
-              uri: 'https://reactjs.org/logo-og.png',
-            }}
-          />
+          <View>
+            <Image
+              resizeMode="contain"
+              style={[styles.image, loadingImg && styles.loading]}
+              source={{
+                uri: data,
+                cache: 'force-cache',
+              }}
+              onProgress={() => setLoadingImg(true)}
+              onLoadEnd={() => setLoadingImg(false)}
+            />
+            {loadingImg && (
+              <ActivityIndicator
+                size={50}
+                color={GlobalStyles.colors.primary}
+                style={{
+                  position: 'absolute',
+                  left: '40%',
+                  top: '40%',
+                }}
+              />
+            )}
+          </View>
         ) : (
           <Text style={styles.textMess}>{data}</Text>
         )}
       </View>
       <View style={styles.seen}>
-        {own &&
-          (isRead ? (
-            seen && <Avatar size={16} image={{ uri: currentUser.photoURL }} />
+        {own ? (
+          isRead ? (
+            seen && <Avatar size={16} image={{ uri: seenImg, cache: 'force-cache' }} />
           ) : (
             <Ionicons size={16} name="ios-checkmark-circle" color={GlobalStyles.colors.seenColor} />
-          ))}
+          )
+        ) : (
+          <View></View>
+        )}
       </View>
     </View>
   );
@@ -94,6 +119,9 @@ const styles = StyleSheet.create({
   seen: {
     width: 16,
     marginLeft: 8,
+  },
+  loading: {
+    backgroundColor: GlobalStyles.colors.powderGreyOpacity,
   },
 });
 export default Message;

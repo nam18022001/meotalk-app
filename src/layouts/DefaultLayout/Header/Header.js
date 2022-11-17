@@ -2,7 +2,7 @@ import { AppBar, HStack, IconButton } from '@react-native-material/core';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { memo } from 'react';
 import { View } from 'react-native';
-import GlobalStyles from '../../../Components/GlobalStyles/GlobalStyles';
+import GlobalStyles from '../../../Components/GlobalStyles';
 
 function Header({ title, navigation }) {
   return (
@@ -10,7 +10,7 @@ function Header({ title, navigation }) {
       <AppBar
         color="#55aac0"
         tintColor="#222041"
-        titleStyle={{ fontFamily: GlobalStyles.fonts.fontBold }}
+        titleStyle={{ fontFamily: GlobalStyles.fonts.fontAudiowide, fontSize: 25 }}
         title={title}
         trailing={(props) => (
           <HStack>

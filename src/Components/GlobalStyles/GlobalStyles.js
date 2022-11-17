@@ -9,6 +9,7 @@ function GlobalStyles() {
       fontExtraLight: 'font-extralight',
       fontLight: 'font-light',
       fontSemiBold: 'font-semibold',
+      fontAudiowide: 'Audiowide',
     },
     colors: {
       primary: '#4d9ac0',

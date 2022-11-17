@@ -1,48 +1,214 @@
-import { useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { IconButton } from '@react-native-material/core';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, ToastAndroid, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import storage from '@react-native-firebase/storage';
 import { utils } from '@react-native-firebase/app';
 import * as ImagePicker from 'expo-image-picker';
+import firestore from '@react-native-firebase/firestore';
 
-import GlobalStyles from '../../../Components/GlobalStyles/GlobalStyles';
+import GlobalStyles from '../../../Components/GlobalStyles';
+import useAuthContext from '../../../hooks/useAuthContext';
 
-function Input() {
+function Input({ chatRoomId }) {
+  const currentUser = useAuthContext();
   const [image, setImage] = useState();
+
+  const [message, setMessage] = useState('');
+  const [lastStt, setLastStt] = useState(0);
+  const [hasMess, setHasMess] = useState(false);
+  const [focusInput, setFocusInput] = useState(false);
+
+  const inputRef = useRef();
+
+  useEffect(() => {
+    firestore()
+      .collection('ChatRoom')
+      .doc(chatRoomId)
+      .collection('chats')
+      .orderBy('stt', 'desc')
+      .onSnapshot((res) => {
+        if (!res.empty) {
+          setLastStt(res.docs[0].data().stt);
+          setHasMess(true);
+        } else {
+          setLastStt(0);
+          setHasMess(false);
+        }
+      });
+  }, []);
 
   const handleCameraPick = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status == 'granted') {
+      setFocusInput(false);
       let result = await ImagePicker.launchCameraAsync({
         quality: 0.3,
       });
 
       if (!result.canceled) {
-        console.log(result.assets);
+        const fileName = result.assets[0].uri.split('/').pop();
+        const time = Date.now();
+        await storage().ref(`${chatRoomId}/${currentUser.email}&&${time}&&${fileName}`).putFile(result.assets[0].uri);
+
+        const urlImg = await storage().ref(`${chatRoomId}/${currentUser.email}&&${time}&&${fileName}`).getDownloadURL();
+        firestore()
+          .collection('ChatRoom')
+          .doc(chatRoomId)
+          .collection('chats')
+          .get()
+          .then((res) => {
+            if (res.empty) {
+              firestore().collection('ChatRoom').doc(chatRoomId).collection('chats').add({
+                isRead: false,
+                message: urlImg,
+                sendBy: currentUser.email,
+                stt: 0,
+                time: Date.now(),
+                type: 'image',
+              });
+            } else {
+              firestore()
+                .collection('ChatRoom')
+                .doc(chatRoomId)
+                .collection('chats')
+                .orderBy('stt', 'desc')
+                .get()
+                .then((res) => {
+                  const lastStt = res.docs[0].data().stt;
+                  firestore()
+                    .collection('ChatRoom')
+                    .doc(chatRoomId)
+                    .collection('chats')
+                    .add({
+                      isRead: false,
+                      message: urlImg,
+                      sendBy: currentUser.email,
+                      stt: lastStt + 1,
+                      time: Date.now(),
+                      type: 'image',
+                    });
+                });
+            }
+          });
       } else {
         setImage();
       }
+    } else {
+      ToastAndroid.showWithGravity(
+        'MeoTalk need your permission camera to send image',
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER,
+      );
     }
   };
 
   const handleLibraryPick = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status == 'granted') {
+      setFocusInput(false);
       let result = await ImagePicker.launchImageLibraryAsync({
         quality: 0.3,
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
       });
 
       if (!result.canceled) {
-        console.log(result.assets[0].uri);
-        const filename = result.assets[0].uri.substring(result.assets[0].uri.lastIndexOf('/') + 1);
-        const reference = storage().ref(`/images/${filename}`);
-        await reference.putFile(result.assets[0].uri);
-        setImage(result.assets);
+        const fileName = result.assets[0].uri.split('/').pop();
+        const time = Date.now();
+        await storage().ref(`${chatRoomId}/${currentUser.email}&&${time}&&${fileName}`).putFile(result.assets[0].uri);
+
+        const urlImg = await storage().ref(`${chatRoomId}/${currentUser.email}&&${time}&&${fileName}`).getDownloadURL();
+        firestore()
+          .collection('ChatRoom')
+          .doc(chatRoomId)
+          .collection('chats')
+          .get()
+          .then((res) => {
+            if (res.empty) {
+              firestore().collection('ChatRoom').doc(chatRoomId).collection('chats').add({
+                isRead: false,
+                message: urlImg,
+                sendBy: currentUser.email,
+                stt: 0,
+                time: Date.now(),
+                type: 'image',
+              });
+            } else {
+              firestore()
+                .collection('ChatRoom')
+                .doc(chatRoomId)
+                .collection('chats')
+                .orderBy('stt', 'desc')
+                .get()
+                .then((res) => {
+                  const lastStt = res.docs[0].data().stt;
+                  firestore()
+                    .collection('ChatRoom')
+                    .doc(chatRoomId)
+                    .collection('chats')
+                    .add({
+                      isRead: false,
+                      message: urlImg,
+                      sendBy: currentUser.email,
+                      stt: lastStt + 1,
+                      time: Date.now(),
+                      type: 'image',
+                    });
+                });
+            }
+          });
       } else {
         setImage();
       }
+    } else {
+      ToastAndroid.showWithGravity(
+        'MeoTalk need your permission strorage to send image',
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER,
+      );
+    }
+  };
+
+  const handleMessageInput = (text) => {
+    if (!text.startsWith(' ') && !text.startsWith('\n')) {
+      setMessage(text);
+    }
+  };
+
+  const handleSendMess = () => {
+    if (message) {
+      setMessage('');
+      inputRef.current.focus();
+
+      if (hasMess === false) {
+        firestore().collection('ChatRoom').doc(chatRoomId).collection('chats').add({
+          isRead: false,
+          message: message,
+          sendBy: currentUser.email,
+          stt: lastStt,
+          time: Date.now(),
+          type: 'message',
+        });
+      } else {
+        firestore()
+          .collection('ChatRoom')
+          .doc(chatRoomId)
+          .collection('chats')
+          .add({
+            isRead: false,
+            message: message,
+            sendBy: currentUser.email,
+            stt: lastStt + 1,
+            time: Date.now(),
+            type: 'message',
+          });
+      }
+
+      firestore().collection('ChatRoom').doc(chatRoomId).update({
+        time: Date.now(),
+      });
+    } else {
+      ToastAndroid.showWithGravity('Make sure input has your message', ToastAndroid.SHORT, ToastAndroid.CENTER);
     }
   };
   return (
@@ -56,11 +222,16 @@ function Input() {
           icon={<Ionicons size={25} color={GlobalStyles.colors.primary} name="ios-image" />}
           onPress={handleLibraryPick}
         />
-        {/* <IconButton icon={<Ionicons size={25} color={GlobalStyles.colors.primary} name="ios-mic" />} /> */}
       </View>
-      <View style={styles.inptText}>
+
+      <View style={[styles.inptText, focusInput ? { maxHeight: 150 } : { maxHeight: 38 }]}>
         <TextInput
+          ref={inputRef}
           multiline
+          onFocus={() => setFocusInput(true)}
+          onBlur={() => setFocusInput(false)}
+          value={message}
+          onChangeText={(text) => handleMessageInput(text)}
           style={styles.input}
           autoCapitalize
           autoCorrect
@@ -69,7 +240,10 @@ function Input() {
         />
       </View>
       <View>
-        <IconButton icon={<Ionicons size={25} color={GlobalStyles.colors.primary} name="ios-send" />} />
+        <IconButton
+          icon={<Ionicons size={25} color={GlobalStyles.colors.primary} name="ios-send" />}
+          onPress={handleSendMess}
+        />
       </View>
     </View>
   );
@@ -78,8 +252,7 @@ const styles = StyleSheet.create({
   wrapper: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-
+    alignItems: 'flex-end',
     paddingLeft: 20,
     paddingRight: 20,
   },
@@ -93,12 +266,14 @@ const styles = StyleSheet.create({
     backgroundColor: GlobalStyles.colors.powderGreyOpacity,
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 5,
   },
   input: {
+    flex: 1,
     paddingTop: 5,
     paddingBottom: 5,
     paddingLeft: 15,
     paddingRight: 10,
   },
 });
-export default Input;
+export default memo(Input);
