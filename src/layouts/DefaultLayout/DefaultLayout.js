@@ -4,9 +4,11 @@ import { useLayoutEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import GlobalStyles from '../../Components/GlobalStyles/GlobalStyles';
+import GlobalStyles from '../../Components/GlobalStyles';
 import useAuthContext from '../../hooks/useAuthContext';
+import Friends from '../../Views/Friends';
 import Home from '../../Views/Home';
+import NotifiCation from '../../Views/Notification';
 import Profile from '../../Views/Profile';
 import Header from './Header';
 
@@ -27,7 +29,6 @@ function DefaultLayout() {
         <Tab.Navigator
           initialRouteName="Conversation"
           screenOptions={({ route }) => ({
-            // headerShown: false,
             header: ({ navigation, route }) => {
               return <Header title={route.name} navigation={navigation} />;
             },
@@ -78,8 +79,8 @@ function DefaultLayout() {
           })}
         >
           <Tab.Screen name="Messages" component={Home} />
-          <Tab.Screen name="Friends" component={Home} />
-          <Tab.Screen name="Notification" component={Home} options={{ tabBarBadge: 5 }} />
+          <Tab.Screen name="Friends" component={Friends} />
+          <Tab.Screen name="Notification" component={NotifiCation} options={{ tabBarBadge: 5 }} />
           <Tab.Screen name="Profile" component={Profile} />
         </Tab.Navigator>
       </View>

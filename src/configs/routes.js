@@ -1,6 +1,7 @@
 const routes = {
   home: 'Home',
-  profile: 'Profile',
+  chat: 'Chat',
+  profileFriends: 'ProfileFriend',
   // conversation: '/message@:idChatRoom',
   // callvideo: '/video/group@:tokenCall',
 };

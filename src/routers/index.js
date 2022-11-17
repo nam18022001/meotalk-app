@@ -3,10 +3,9 @@
 import config from '../configs';
 
 //Pages
-
-import Home from '../Views/Home';
-import Profile from '../Views/Profile';
-// import Login from './';
+import FriendProfile from '../Views/FriendProfile';
+import DefaultLayout from '../layouts/DefaultLayout';
+import Chat from '../Views/Chat';
 
 //Layout
 
@@ -15,11 +14,9 @@ import Profile from '../Views/Profile';
 
 //Private Routes
 const privateRoutes = [
-  { path: config.routes.home, component: <Home /> },
-  { path: config.routes.profile, component: <Profile /> },
-  // { path: config.routes.conversation, component: ConverseBox },
-  // { path: config.routes.profile, component: Profile },
-  // { path: config.routes.callvideo, component: VideoCall, layout: CallLayout },
+  { path: config.routes.home, component: DefaultLayout },
+  { path: config.routes.chat, component: Chat },
+  { path: config.routes.profileFriends, component: FriendProfile },
 ];
 
 export { privateRoutes };

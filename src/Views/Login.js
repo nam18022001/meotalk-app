@@ -1,9 +1,9 @@
-
 import { memo, useEffect, useRef, useState } from 'react';
 import { Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import GlobalStyles from '../Components/GlobalStyles/GlobalStyles';
+import GlobalStyles from '../Components/GlobalStyles';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 function Login() {
   GoogleSignin.configure({
@@ -48,19 +48,41 @@ function Login() {
     ).start();
   }, []);
 
+  const fcCreateKeyWord = (email) => {
+    var keywords = [];
+
+    if (email) {
+      for (let letter = 0; letter < email.length; letter++) {
+        keywords.push(email.slice(0, letter + 1));
+      }
+      return keywords;
+    }
+    console.log(keywords);
+  };
 
   const handleLogin = async () => {
     setPress(!press);
-        // Check if your device supports Google Play
-        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-        // Get the users ID token
-        const { idToken } = await GoogleSignin.signIn();
-      
-        // Create a Google credential with the token
-        const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-      
-        // Sign-in the user with the credential
-        return auth().signInWithCredential(googleCredential);
+    // Check if your device supports Google Play
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    // Get the users ID token
+    const { idToken } = await GoogleSignin.signIn();
+    // Create a Google credential with the token
+    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+
+    // Sign-in the user with the credential
+    return auth()
+      .signInWithCredential(googleCredential)
+      .then((res) => {
+        const keyWord = fcCreateKeyWord(res.user.email);
+        firestore().collection('users').doc(res.user.uid).set({
+          uid: res.user.uid,
+          displayName: res.user.displayName,
+          email: res.user.email,
+          photoUrl: res.user.photoURL,
+          fcmToken: '',
+          keyWord: keyWord,
+        });
+      });
   };
   return (
     <View style={styles.wrapper}>
@@ -113,7 +135,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 20,
     textShadowOffset: { width: 2, height: -2 },
     color: '#fff',
-    fontFamily: 'Audiowide',
+    fontFamily: GlobalStyles.fonts.fontAudiowide,
     fontSize: 50,
   },
   buttonView: {
