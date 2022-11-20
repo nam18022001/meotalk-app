@@ -13,6 +13,7 @@ import Chat from './src/Views/Chat';
 import Login from './src/Views/Login';
 import GlobalStyles from './src/Components/GlobalStyles';
 import { privateRoutes } from './src/routers';
+import { CallContextProvider } from './src/contexts/CallContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -35,7 +36,9 @@ function Landing() {
                 <ProtectedPrivateRoute user={currentUser} navigation={props.navigation}>
                   <SafeAreaView>
                     <StatusBar barStyle={'dark-content'} backgroundColor="#fff" />
-                    <Screen navigation={props.navigation} route={props.route} />
+                    <CallContextProvider navigation={props.navigation}>
+                      <Screen navigation={props.navigation} route={props.route} />
+                    </CallContextProvider>
                   </SafeAreaView>
                 </ProtectedPrivateRoute>
               )}

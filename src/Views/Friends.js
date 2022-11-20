@@ -51,7 +51,7 @@ function Search({ navigation }) {
         });
     };
     search();
-    return timeID;
+    return () => clearTimeout(timeID);
   }, [debounced]);
   const handleClickClear = () => {
     setSearchValue('');

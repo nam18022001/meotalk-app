@@ -6,6 +6,7 @@ import config from '../configs';
 import FriendProfile from '../Views/FriendProfile';
 import DefaultLayout from '../layouts/DefaultLayout';
 import Chat from '../Views/Chat';
+import VideoCall from '../Views/Call/VideoCall';
 
 //Layout
 
@@ -16,6 +17,7 @@ import Chat from '../Views/Chat';
 const privateRoutes = [
   { path: config.routes.home, component: DefaultLayout },
   { path: config.routes.chat, component: Chat },
+  { path: config.routes.videoCall, component: VideoCall },
   { path: config.routes.profileFriends, component: FriendProfile },
 ];
 

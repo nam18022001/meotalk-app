@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import GlobalStyles from '../../../Components/GlobalStyles';
 
-function HeaderChat({ navigation, userFriend }) {
+function HeaderChat({ navigation, userFriend, onPressCallVideo }) {
   return (
     <AppBar
       titleContentStyle={{ marginLeft: -15 }}
@@ -29,6 +29,7 @@ function HeaderChat({ navigation, userFriend }) {
           <IconButton
             icon={(props) => <Ionicons name="ios-videocam" {...props} />}
             color={GlobalStyles.colors.primary}
+            onPress={onPressCallVideo}
           />
         </View>
       )}
