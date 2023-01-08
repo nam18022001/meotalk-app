@@ -131,6 +131,7 @@ function VideoCall({ navigation, route }) {
           agoraEngineRef.current?.disableVideo();
           agoraEngineRef.current?.leaveChannel();
           setRemoteUid(0);
+          firestore().collection('call').doc(idCall).delete();
         },
         onRemoteVideoStateChanged: (_connection, Uid, state) => {
           setVideoRemoteStatus(state);
@@ -246,6 +247,7 @@ function VideoCall({ navigation, route }) {
                       position: 'absolute',
                       height: '100%',
                       width: '100%',
+                      zIndex: 50,
                     }}
                   />
                 ) : (

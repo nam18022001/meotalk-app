@@ -104,7 +104,7 @@ function Chat({ navigation, route }) {
       const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
 
       // build token caller
-      let serverUrl = 'https://agora-token-service-production-6fd8.up.railway.app/rtc/';
+      let serverUrl = 'https://meotalk-token-agora.vercel.app/rtc/';
       const responseCaller = await fetch(
         serverUrl + channelName + '/' + role + '/uid/' + uidCaller + '/?expiry=' + privilegeExpiredTs,
       );
@@ -130,7 +130,7 @@ function Chat({ navigation, route }) {
         recieverUid: infoFriend.uid,
         receiverName: infoFriend.displayName,
         receiverAvatar: infoFriend.photoUrl,
-        dialling: true,
+
         hasDialled: false,
         deleteCall: false,
         channelName: channelName,
