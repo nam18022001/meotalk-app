@@ -78,7 +78,7 @@ function AccountItem({ navigation, data, beFriend = false }) {
       sender: currentUser.uid,
       reciever: data.uid,
       emailReciever: data.email,
-      photoReciever: data.photoUrl,
+      photoReciever: data.photoURL,
       nameReciever: data.displayName,
     });
   };
@@ -88,13 +88,13 @@ function AccountItem({ navigation, data, beFriend = false }) {
       uid: data.uid,
       displayName: data.displayName,
       email: data.email,
-      photoUrl: data.photoUrl,
+      photoURL: data.photoURL,
     });
     firestore().collection('users').doc(data.uid).collection('friends').doc(currentUser.uid).set({
       uid: currentUser.uid,
       displayName: currentUser.displayName,
       email: currentUser.email,
-      photoUrl: currentUser.photoURL,
+      photoURL: currentUser.photoURL,
     });
     recieveFriendDoc.delete();
   };
@@ -148,7 +148,7 @@ function AccountItem({ navigation, data, beFriend = false }) {
       onPress={handleGotoProfile}
     >
       <View style={styles.wrapper}>
-        <Avatar image={{ uri: data.photoUrl }} />
+        <Avatar image={{ uri: data.photoURL }} />
         <View style={styles.info}>
           <Text numberOfLines={1} style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 16 }}>
             {data.displayName}
@@ -204,13 +204,13 @@ function AccountItemRequest({ navigation, data, sent = false, request = false })
       uid: data.sender,
       displayName: data.nameSender,
       email: data.emailSender,
-      photoUrl: data.photoSender,
+      photoURL: data.photoSender,
     });
     firestore().collection('users').doc(data.sender).collection('friends').doc(currentUser.uid).set({
       uid: currentUser.uid,
       displayName: currentUser.displayName,
       email: currentUser.email,
-      photoUrl: currentUser.photoURL,
+      photoURL: currentUser.photoURL,
     });
     recieveFriendDoc.delete();
   };

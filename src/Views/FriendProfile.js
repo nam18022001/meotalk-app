@@ -45,7 +45,7 @@ function FriendProfile({ navigation, route }) {
             setNumFr(res.size);
             let avatarFriends = [];
             res.forEach((resFr) => {
-              avatarFriends.push(resFr.data().photoUrl);
+              avatarFriends.push(resFr.data().photoURL);
             });
 
             setPhotoFriends(avatarFriends.slice(0, 6));
@@ -68,7 +68,7 @@ function FriendProfile({ navigation, route }) {
               setNumFr(res.size);
               let avatarFriends = [];
               res.forEach((resFr) => {
-                avatarFriends.push(resFr.data().photoUrl);
+                avatarFriends.push(resFr.data().photoURL);
               });
 
               setPhotoFriends(avatarFriends.slice(0, 6));
@@ -84,7 +84,7 @@ function FriendProfile({ navigation, route }) {
               setNumFr(res.size);
               let avatarFriends = [];
               res.forEach((resFr) => {
-                avatarFriends.push(resFr.data().photoUrl);
+                avatarFriends.push(resFr.data().photoURL);
               });
 
               setPhotoFriends(avatarFriends.slice(0, 6));
@@ -102,7 +102,7 @@ function FriendProfile({ navigation, route }) {
       sender: currentUser.uid,
       reciever: infoFriend.uid,
       emailReciever: infoFriend.email,
-      photoReciever: infoFriend.photoUrl,
+      photoReciever: infoFriend.photoURL,
       nameReciever: infoFriend.displayName,
     });
     return navigation.goBack();
@@ -169,7 +169,7 @@ function FriendProfile({ navigation, route }) {
                     ? state.addSent
                       ? infoFriend.photoReciever
                       : state.isRecieveRequest && infoFriend.photoSender
-                    : infoFriend.photoUrl,
+                    : infoFriend.photoURL,
                 cache: 'force-cache',
               }}
             />

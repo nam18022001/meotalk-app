@@ -24,7 +24,7 @@ function Profile({ navigation, route }) {
           setNumFr(res.size);
           let avatarFriends = [];
           res.forEach((resFr) => {
-            avatarFriends.push(resFr.data().photoUrl);
+            avatarFriends.push(resFr.data().photoURL);
           });
 
           setPhotoFriends(avatarFriends.slice(0, 6));
@@ -54,6 +54,9 @@ function Profile({ navigation, route }) {
               <TouchableNativeFeedback
                 background={TouchableNativeFeedback.Ripple('#123944', true)}
                 onPress={() => {
+                  firestore().collection('users').doc(currentUser.uid).update({
+                    fcmToken: '',
+                  });
                   auth().signOut();
                   GoogleSignin.signOut();
                 }}

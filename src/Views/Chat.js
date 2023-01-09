@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, View } from 'react-native';
 
 import useAuthContext from '../hooks/useAuthContext';
+import useSendNotifiCation from '../hooks/useSendNotification';
 import HeaderChat from './components/Header';
 import Input from './components/Input';
 import Message from './components/Message';
@@ -129,7 +130,7 @@ function Chat({ navigation, route }) {
         recieverId: uidReciever,
         recieverUid: infoFriend.uid,
         receiverName: infoFriend.displayName,
-        receiverAvatar: infoFriend.photoUrl,
+        receiverAvatar: infoFriend.photoURL,
 
         hasDialled: false,
         deleteCall: false,
@@ -138,11 +139,12 @@ function Chat({ navigation, route }) {
         tokenReciever: tokenReciever,
         type: 'video',
       });
+      useSendNotifiCation({ call: 'calling', chatRoomId: idChatRoom, infoFriend, currentUser });
       return navigation.navigate('VideoCall', {
         idCall: channelName,
         token: tokenCaller,
         uid: uidCaller,
-        friendAvatar: infoFriend.photoUrl,
+        friendAvatar: infoFriend.photoURL,
         friendName: infoFriend.displayName,
       });
     } else {
@@ -157,7 +159,7 @@ function Chat({ navigation, route }) {
       data={item.message}
       own={item.sendBy === currentUser.email ? true : false}
       type={item.type}
-      seenImg={infoFriend.photoUrl}
+      seenImg={infoFriend.photoURL}
       seen={item.stt === lastSttRead ? true : false}
       isRead={item.isRead}
       marginBottom={item.stt === lastStt ? true : false}
@@ -171,7 +173,7 @@ function Chat({ navigation, route }) {
         <FlatList inverted data={messages} renderItem={renderItem} keyExtractor={(item) => item.stt} />
       </View>
 
-      <Input chatRoomId={idChatRoom} />
+      <Input chatRoomId={idChatRoom} infoFriend={infoFriend} />
     </View>
   );
 }

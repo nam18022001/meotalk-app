@@ -9,8 +9,9 @@ import firestore from '@react-native-firebase/firestore';
 
 import GlobalStyles from '../../../Components/GlobalStyles';
 import useAuthContext from '../../../hooks/useAuthContext';
+import useSendNotifiCation from '../../../hooks/useSendNotification';
 
-function Input({ chatRoomId }) {
+function Input({ chatRoomId, infoFriend }) {
   const currentUser = useAuthContext();
   const [image, setImage] = useState();
 
@@ -91,6 +92,7 @@ function Input({ chatRoomId }) {
                 });
             }
           });
+        useSendNotifiCation({ currentUser, imageUrl: urlImg, chatRoomId, infoFriend });
       } else {
         setImage();
       }
@@ -157,6 +159,7 @@ function Input({ chatRoomId }) {
                 });
             }
           });
+        useSendNotifiCation({ currentUser, imageUrl: urlImg, chatRoomId, infoFriend });
       } else {
         setImage();
       }
@@ -207,10 +210,12 @@ function Input({ chatRoomId }) {
       firestore().collection('ChatRoom').doc(chatRoomId).update({
         time: Date.now(),
       });
+      useSendNotifiCation({ currentUser, chatRoomId, infoFriend });
     } else {
       ToastAndroid.showWithGravity('Make sure input has your message', ToastAndroid.SHORT, ToastAndroid.CENTER);
     }
   };
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.actions}>

@@ -1,4 +1,5 @@
 import firestore from '@react-native-firebase/firestore';
+import messaging from '@react-native-firebase/messaging';
 import { memo, useEffect, useState } from 'react';
 import { ScrollView } from 'react-native';
 
@@ -11,6 +12,14 @@ function Home({ navigation }) {
   const [chatRoomInfo, setChatRoomInfo] = useState([]);
 
   useEffect(() => {
+    messaging().onNotificationOpenedApp((remoteMessage) => {
+      if (remoteMessage.data.call === '') {
+        navigation.navigate('Chat', {
+          idChatRoom: remoteMessage.data.chatRoomId,
+          infoFriend: JSON.parse(remoteMessage.data.infoFriend),
+        });
+      }
+    });
     const subscriber = firestore()
       .collection('ChatRoom')
       .where('usersEmail', 'array-contains', currentUser.email)

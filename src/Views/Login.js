@@ -4,6 +4,7 @@ import GlobalStyles from '../Components/GlobalStyles';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import messaging from '@react-native-firebase/messaging';
 
 function Login() {
   GoogleSignin.configure({
@@ -69,6 +70,10 @@ function Login() {
     // Create a Google credential with the token
     const googleCredential = auth.GoogleAuthProvider.credential(idToken);
 
+    // Create FCM token
+    await messaging().registerDeviceForRemoteMessages();
+    const fcmToken = await messaging().getToken();
+
     // Sign-in the user with the credential
     return auth()
       .signInWithCredential(googleCredential)
@@ -78,8 +83,8 @@ function Login() {
           uid: res.user.uid,
           displayName: res.user.displayName,
           email: res.user.email,
-          photoUrl: res.user.photoURL,
-          fcmToken: '',
+          photoURL: res.user.photoURL,
+          fcmToken,
           keyWord: keyWord,
         });
       });

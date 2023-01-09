@@ -9,7 +9,7 @@ function HeaderChat({ navigation, userFriend, onPressCallVideo }) {
       titleContentStyle={{ marginLeft: -15 }}
       title={
         <View style={styles.headerInfo}>
-          <Avatar style={styles.avatarFriend} size={50} image={{ uri: userFriend.photoUrl }} />
+          <Avatar style={styles.avatarFriend} size={50} image={{ uri: userFriend.photoURL, cache: 'force-cache' }} />
           <Text numberOfLines={1} style={styles.nameFriend}>
             {userFriend.displayName}
           </Text>

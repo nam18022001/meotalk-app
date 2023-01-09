@@ -1,5 +1,5 @@
 import { FirebaseStorageTypes } from '@react-native-firebase/storage';
-import { Avatar } from '@react-native-material/core';
+import { Avatar, IconButton } from '@react-native-material/core';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -191,6 +191,9 @@ function VideoCall({ navigation, route }) {
     agoraEngineRef.current?.enableLocalVideo(!videoStatus);
     setVideoStatus(!videoStatus);
   };
+  const switchCamera = () => {
+    agoraEngineRef.current?.switchCamera();
+  };
   return (
     <View style={styles.main}>
       <View style={styles.wrapper}>
@@ -238,6 +241,7 @@ function VideoCall({ navigation, route }) {
             )}
           </View>
           <View style={{ flex: 1, alignItems: 'flex-end' }}>
+            <IconButton onPress={switchCamera} icon={<Ionicon name="ios-sync-circle" size={30} />} />
             <View style={styles.myVideoView} key={remoteUid + 100}>
               {show &&
                 (videoStatus ? (
@@ -360,6 +364,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     bottom: 5,
+    zIndex: 50,
   },
   wattingFriend: {
     flex: 1,

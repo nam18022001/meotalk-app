@@ -114,7 +114,7 @@ function ConverseItem({ navigation, data }) {
       onPress={handleChatRoom}
     >
       <View style={styles.wrapper}>
-        <Avatar image={{ uri: userInfo.photoUrl }} />
+        <Avatar image={{ uri: userInfo.photoURL }} />
         <View style={styles.info}>
           <Text style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 16 }}>{userInfo.displayName}</Text>
           <View style={styles.converseInbox}>
@@ -149,7 +149,7 @@ function ConverseItem({ navigation, data }) {
               (!seen ? (
                 <Ionicons size={16} name="ios-checkmark-circle" color={GlobalStyles.colors.seenColor} />
               ) : (
-                <Avatar size={16} image={{ uri: userInfo.photoUrl }} />
+                <Avatar size={16} image={{ uri: userInfo.photoURL }} />
               ))}
           </View>
         )}

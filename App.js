@@ -4,11 +4,18 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect } from 'react';
 import { Dimensions, StyleSheet } from 'react-native';
+import messaging from '@react-native-firebase/messaging';
 
 import { View } from 'react-native';
 import Landing from './Landing';
 import fontsLoaded from './src/Components/GlobalStyles/mainFont';
 import { AuthContextProvider } from './src/contexts/AuthContext';
+
+// Register background handler
+messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+  // console.log('Message handled in the background!', remoteMessage);
+});
+
 export default function App() {
   const loadedFont = fontsLoaded();
 
