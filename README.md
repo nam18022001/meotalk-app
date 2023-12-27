@@ -1,4 +1,4 @@
-<p align="center"><img width="200"  src="https://github.com/nam18022001/meotalk-app/blob/master/assets/icon.png"></p>
+<p align="center"><img width="200"  src="https://github.com/nam18022001/meotalk-app/blob/main/assets/icon.png"></p>
 
 # `Meo Talk`
 

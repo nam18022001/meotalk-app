@@ -5,21 +5,23 @@ import Ionicon from 'react-native-vector-icons/Ionicons';
 import firestore from '@react-native-firebase/firestore';
 
 import GlobalStyles from '../../../Components/GlobalStyles';
+import config from '../../../configs';
 
 function PickUp({ data, navigation }) {
-  const handlePickOut = () => {
-    firestore().collection('call').doc(data.channelName).delete();
+  const handlePickOut = async () => {
+    await firestore().collection('call').doc(data.channelName).delete();
   };
   const handlePickUpVideo = async () => {
     await firestore().collection('call').doc(data.channelName).update({
       hasDialled: true,
     });
-    return navigation.navigate('VideoCall', {
+    return navigation.navigate(config.routes.videoCall, {
       idCall: data.channelName,
       token: data.tokenReciever,
       uid: data.recieverId,
       friendAvatar: data.callerAvatar,
       friendName: data.callerName,
+      channelCall: data.channelCall,
     });
   };
   return (

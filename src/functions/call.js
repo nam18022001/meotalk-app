@@ -126,7 +126,7 @@ const handleCallVideo = async ({ chatRoomId, userInfo, currentUser, setPressCall
 
       sendNotifiCation({ call: 'calling', chatRoomId: channelName, infoFriend: userInfo, currentUser });
       setPressCall(false);
-      return navigation.navigate('VideoCall', {
+      return navigation.navigate(config.routes.videoCall, {
         idCall: channelName,
         channelCall: channelCall,
         token: tokenCaller,
