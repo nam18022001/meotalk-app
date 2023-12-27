@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Meo Talk",
+    "slug": "meotalk-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "plugins": [["expo-image-picker", "@react-native-google-signin/google-signin"]],
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.justbeenam.meotalkapp"
+    },
+    "web": {
+      "favicon": "./assets/icon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3033a164-7bad-4cee-a569-b529130f18f4"
+      }
+    }
+  }
+}

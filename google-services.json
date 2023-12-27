@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_number": "74157693277",
+    "firebase_url": "https://one-chat-414b6-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "one-chat-414b6",
+    "storage_bucket": "one-chat-414b6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:74157693277:android:97fb3453a7aa56ebf730b4",
+        "android_client_info": {
+          "package_name": "com.justbeenam.meotalkapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "74157693277-17lduc5esbus4onfdgmo7s9kocg1l7ji.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.justbeenam.meotalkapp",
+            "certificate_hash": "68e8cde591ccdfb2294107d411a0453ab462e361"
+          }
+        },
+        {
+          "client_id": "74157693277-5i5659vn99aufi7t4frnvu73s2qm34m2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.justbeenam.meotalkapp",
+            "certificate_hash": "b3403e616f7039a1877c5b49fb84a47547abd435"
+          }
+        },
+        {
+          "client_id": "74157693277-adgcrkofg5pn60tkr34d295ma23o587o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwJJqfgYaaodmPeV6p8f_hAbnIECRcGfs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "74157693277-adgcrkofg5pn60tkr34d295ma23o587o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
