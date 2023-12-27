@@ -6,7 +6,7 @@
 
 ## 📱 Web Version
 
-Web Version use ReactJS: [Meo Talk](https://github.com/nam18022001/one-chat-webapp)
+Web Version use ReactJS: [Meo Talk](https://github.com/nam18022001/meotalk-webapp)
 
 ## 👨‍💻 How to install
 
