@@ -23,6 +23,7 @@ import config from '../../configs';
 import useAuthContext from '../../hooks/useAuthContext';
 import { addFirstMessage, addMessage, getlastMessage } from '../../Services/conversationServices';
 import useCallContext from '../../hooks/useCallContext';
+import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 
 function VideoCallGroup({ navigation, route }) {
   const { idCall, token, uid, channelCall, friendsInfo, groupName, reciever } = route.params;
@@ -105,7 +106,7 @@ function VideoCallGroup({ navigation, route }) {
 
   useEffect(() => {
     function createIncreament() {
-      if (secondCall !== -1 && hasDialled) {
+      if (secondCall !== -1 && hasDialled && remoteUid.length > 0) {
         if (secondCall === 59) {
           setSecondCall(0);
           setMinuteCall(minuteCall + 1);
@@ -263,6 +264,8 @@ function VideoCallGroup({ navigation, route }) {
           await setLeave();
         } else if (remoteUid.length === 0 && hasDialled) {
           await setLeave(true);
+        } else if (hasDialled === false) {
+          await handleMissCall();
         } else {
           await firestore().collection('call').doc(idCall).delete();
         }
@@ -284,6 +287,52 @@ function VideoCallGroup({ navigation, route }) {
   };
   const switchCamera = () => {
     agoraEngineRef.current?.switchCamera();
+  };
+
+  const handleCompelteCallOut = async () => {
+    if (hasDialled === false) {
+      await leave(false);
+    }
+  };
+
+  const handleMissCall = async () => {
+    setPressCall(true);
+    await firestore().collection('call').doc(idCall).update({
+      deleteCall: true,
+    });
+    const collectChat = firestore().collection('ChatRoom').doc(idCall).collection('chats');
+    const chatRoom = firestore().collection('ChatRoom').doc(idCall);
+    let currentUserAlpha = {
+      email: dataCall.callerEmail,
+    };
+    const getDocChats = await collectChat.get();
+    if (getDocChats.empty) {
+      await addFirstMessage({
+        collectChat,
+        currentUser: currentUserAlpha,
+        data: 'Cuộc gọi nhỡ',
+        callVideo: true,
+        isGroup: true,
+        photoSender: dataCall.callerAvatar,
+      });
+    } else {
+      const dataLast = await getlastMessage({ collectChat });
+
+      await addMessage({
+        collectChat,
+        currentUser: currentUserAlpha,
+        data: 'Cuộc gọi nhỡ',
+        callVideo: true,
+        dataLast,
+        isGroup: true,
+        photoSender: dataCall.callerAvatar,
+      });
+    }
+    await chatRoom.update({
+      time: Date.now(),
+    });
+    await firestore().collection('call').doc(idCall).delete();
+    setPressCall(false);
   };
   return (
     <View style={styles.main}>
@@ -308,7 +357,7 @@ function VideoCallGroup({ navigation, route }) {
         )}
         <View style={styles.videos}>
           <View key={1} style={styles.videoRemoteView}>
-            {remoteUid.length > 0 ? (
+            {remoteUid.length > 0 && hasDialled === true ? (
               remoteUid.map((id, index) => {
                 const videoRemoteState = videoRemoteStatus.filter((v) => v.Uid === id)[0];
                 const infoRemote = friendsInfo.filter((v) => v.id === id)[0];
@@ -432,7 +481,7 @@ function VideoCallGroup({ navigation, route }) {
                   } else return null;
                 } else return null;
               })
-            ) : (
+            ) : hasDialled === false ? (
               <View style={styles.wattingFriend}>
                 <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                   {friendsInfo.slice(0, 3).map((info, index) => (
@@ -463,9 +512,29 @@ function VideoCallGroup({ navigation, route }) {
                 <Text style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 20, marginVertical: 10 }}>
                   {groupName}
                 </Text>
+                <View style={{ flexDirection: 'row', marginTop: 20, alignItems: 'center' }}>
+                  <CountdownCircleTimer
+                    isPlaying
+                    duration={60}
+                    colors={['#004777', '#F7B801', '#A30000', '#A30000']}
+                    colorsTime={[60, 40, 20, 0]}
+                    onComplete={handleCompelteCallOut}
+                    size={42}
+                    strokeWidth={3}
+                  >
+                    {({ remainingTime }) => <Text style={{ fontSize: 12 }}>{remainingTime}s</Text>}
+                  </CountdownCircleTimer>
+                  <Text style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 25, marginHorizontal: 10 }}>
+                    Dialling
+                  </Text>
+                  <Loader />
+                </View>
+              </View>
+            ) : (
+              <View style={styles.wattingFriend}>
                 <View style={{ flexDirection: 'row', marginTop: 20 }}>
                   <Text style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 25, marginRight: 10 }}>
-                    Dialling
+                    Waiting for others
                   </Text>
                   <Loader />
                 </View>

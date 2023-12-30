@@ -22,7 +22,7 @@ import config from '../../configs';
 import useAuthContext from '../../hooks/useAuthContext';
 import { addFirstMessage, addMessage, getlastMessage } from '../../Services/conversationServices';
 import useCallContext from '../../hooks/useCallContext';
-import CountdownCircle from '../../Components/CountDownTimer';
+import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 
 function VideoCall({ navigation, route }) {
   const { idCall, token, uid, friendAvatar, friendName, channelCall } = route.params;
@@ -226,41 +226,7 @@ function VideoCall({ navigation, route }) {
       if (hasDialled === true) {
         await setLeave();
       } else if (hasDialled === false) {
-        setPressCall(true);
-        await firestore().collection('call').doc(idCall).update({
-          deleteCall: true,
-        });
-        const collectChat = firestore().collection('ChatRoom').doc(idCall).collection('chats');
-        const chatRoom = firestore().collection('ChatRoom').doc(idCall);
-        let currentUserAlpha = {
-          email: dataCall.callerEmail,
-        };
-        const getDocChats = await collectChat.get();
-        if (getDocChats.empty) {
-          await addFirstMessage({
-            collectChat,
-            currentUser: currentUserAlpha,
-            data: 'Cuộc gọi nhỡ',
-            callVideo: true,
-            isGroup: false,
-          });
-        } else {
-          const dataLast = await getlastMessage({ collectChat });
-
-          await addMessage({
-            collectChat,
-            currentUser: currentUserAlpha,
-            data: 'Cuộc gọi nhỡ',
-            callVideo: true,
-            dataLast,
-            isGroup: false,
-          });
-        }
-        await chatRoom.update({
-          time: Date.now(),
-        });
-        await firestore().collection('call').doc(idCall).delete();
-        setPressCall(false);
+        await handleMissCall();
       } else {
         await firestore().collection('call').doc(idCall).delete();
       }
@@ -280,9 +246,49 @@ function VideoCall({ navigation, route }) {
   const switchCamera = () => {
     agoraEngineRef.current?.switchCamera();
   };
+  const handleCompelteCallOut = async () => {
+    if (hasDialled === false) {
+      await leave();
+      return navigation.goBack();
+    }
+  };
 
-  const handleCountdownComplete = () => {
-    console.log('Countdown completed!');
+  const handleMissCall = async () => {
+    setPressCall(true);
+    await firestore().collection('call').doc(idCall).update({
+      deleteCall: true,
+    });
+    const collectChat = firestore().collection('ChatRoom').doc(idCall).collection('chats');
+    const chatRoom = firestore().collection('ChatRoom').doc(idCall);
+    let currentUserAlpha = {
+      email: dataCall.callerEmail,
+    };
+    const getDocChats = await collectChat.get();
+    if (getDocChats.empty) {
+      await addFirstMessage({
+        collectChat,
+        currentUser: currentUserAlpha,
+        data: 'Cuộc gọi nhỡ',
+        callVideo: true,
+        isGroup: false,
+      });
+    } else {
+      const dataLast = await getlastMessage({ collectChat });
+
+      await addMessage({
+        collectChat,
+        currentUser: currentUserAlpha,
+        data: 'Cuộc gọi nhỡ',
+        callVideo: true,
+        dataLast,
+        isGroup: false,
+      });
+    }
+    await chatRoom.update({
+      time: Date.now(),
+    });
+    await firestore().collection('call').doc(idCall).delete();
+    setPressCall(false);
   };
 
   return (
@@ -321,11 +327,17 @@ function VideoCall({ navigation, route }) {
               )
             ) : (
               <View style={styles.wattingFriend}>
-                {/* <Avatar image={{ uri: friendAvatar }} size={130} /> */}
-                <CountdownCircle size={200} duration={60} onComplete={handleCountdownComplete}>
-                  {/* Bạn có thể thêm các thành phần khác ở đây */}
-                  <Text style={{ marginTop: 20 }}>Custom Component Inside Circle</Text>
-                </CountdownCircle>
+                <CountdownCircleTimer
+                  isPlaying
+                  duration={60}
+                  colors={['#004777', '#F7B801', '#A30000', '#A30000']}
+                  colorsTime={[60, 40, 20, 0]}
+                  onComplete={handleCompelteCallOut}
+                  size={130}
+                  strokeWidth={5}
+                >
+                  {() => <Avatar image={{ uri: friendAvatar }} size={120} />}
+                </CountdownCircleTimer>
                 <View style={{ flexDirection: 'row', marginTop: 30 }}>
                   <Text style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 25, marginRight: 10 }}>
                     Dialling

@@ -39,6 +39,7 @@ export const CallContextProvider = ({ children, navigation }) => {
       .collection('call')
       .where('recieverUid', 'array-contains', currentUser.uid)
       .where('isGroup', '==', true)
+      .where('deleteCall', '==', false)
       .onSnapshot((res) => {
         if (!res.empty) {
           if (
