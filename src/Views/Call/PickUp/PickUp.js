@@ -6,9 +6,41 @@ import firestore from '@react-native-firebase/firestore';
 
 import GlobalStyles from '../../../Components/GlobalStyles';
 import config from '../../../configs';
+import { addFirstMessage, addMessage, getlastMessage } from '../../../Services/conversationServices';
 
 function PickUp({ data, navigation }) {
   const handlePickOut = async () => {
+    await firestore().collection('call').doc(data.channelName).update({
+      deleteCall: true,
+    });
+    const collectChat = firestore().collection('ChatRoom').doc(data.channelName).collection('chats');
+    const chatRoom = firestore().collection('ChatRoom').doc(data.channelName);
+    let currentUserAlpha = {
+      email: data.callerEmail,
+    };
+    const getDocChats = await collectChat.get();
+    if (getDocChats.empty) {
+      await addFirstMessage({
+        collectChat,
+        currentUser: currentUserAlpha,
+        data: 'Cuộc gọi nhỡ',
+        callVideo: true,
+        isGroup: false,
+      });
+    } else {
+      const dataLast = await getlastMessage({ collectChat });
+      await addMessage({
+        collectChat,
+        currentUser: currentUserAlpha,
+        data: 'Cuộc gọi nhỡ',
+        callVideo: true,
+        dataLast,
+        isGroup: false,
+      });
+    }
+    await chatRoom.update({
+      time: Date.now(),
+    });
     await firestore().collection('call').doc(data.channelName).delete();
   };
   const handlePickUpVideo = async () => {

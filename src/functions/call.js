@@ -1,9 +1,10 @@
+import firestore from '@react-native-firebase/firestore';
 import CryptoJS from 'crypto-js';
 import { addCallMessages, checkCallExist, getTokenCallerAndRevicer } from '../Services/callServices';
-import { Alert } from 'react-native';
-import { toastError } from '../hooks/useToast';
-import sendNotifiCation from '../hooks/useSendNotification';
 import config from '../configs';
+import sendNotifiCation from '../hooks/useSendNotification';
+import { toastError } from '../hooks/useToast';
+import { addFirstMessage, addMessage, getlastMessage } from '../Services/conversationServices';
 
 const handleCallVideo = async ({ chatRoomId, userInfo, currentUser, setPressCall, navigation, groupName }) => {
   const channelCall = CryptoJS.MD5(chatRoomId).toString();
@@ -136,7 +137,34 @@ const handleCallVideo = async ({ chatRoomId, userInfo, currentUser, setPressCall
         reciever: false,
       });
     } else {
+      const collectChat = firestore().collection('ChatRoom').doc(channelName).collection('chats');
+      const chatRoom = firestore().collection('ChatRoom').doc(channelName);
+
+      const getDocChats = await collectChat.get();
+      if (getDocChats.empty) {
+        await addFirstMessage({
+          collectChat,
+          currentUser,
+          data: 'Cuộc gọi nhỡ',
+          callVideo: true,
+          isGroup: false,
+        });
+      } else {
+        const dataLast = await getlastMessage({ collectChat });
+        await addMessage({
+          collectChat,
+          currentUser,
+          data: 'Cuộc gọi nhỡ',
+          callVideo: true,
+          dataLast,
+          isGroup: false,
+        });
+      }
+      await chatRoom.update({
+        time: Date.now(),
+      });
       toastError(`${userInfo[0].displayName} in a Call`);
+      sendNotifiCation({ currentUser, chatRoomId, infoFriend: userInfo });
       return setPressCall(false);
     }
   }

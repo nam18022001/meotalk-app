@@ -23,13 +23,11 @@ export const CallContextProvider = ({ children, navigation }) => {
       .collection('call')
       .where('recieverUid', '==', currentUser.uid)
       .where('hasDialled', '==', false)
+      .where('deleteCall', '==', false)
       .onSnapshot((res) => {
         if (!res.empty) {
           setDataCall(res.docs[0].data());
           setShowCallPickUp(true);
-          if (res.docs[0].data().deleteCall === true) {
-            firestore().collection('call').doc(res.docs[0].id).delete();
-          }
         } else {
           setShowCallPickUp(false);
         }

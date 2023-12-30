@@ -20,11 +20,15 @@ import Ionicon from 'react-native-vector-icons/Ionicons';
 import GlobalStyles from '../../Components/GlobalStyles';
 import config from '../../configs';
 import useAuthContext from '../../hooks/useAuthContext';
+import { addFirstMessage, addMessage, getlastMessage } from '../../Services/conversationServices';
+import useCallContext from '../../hooks/useCallContext';
+import CountdownCircle from '../../Components/CountDownTimer';
 
 function VideoCall({ navigation, route }) {
   const { idCall, token, uid, friendAvatar, friendName, channelCall } = route.params;
 
   const currentUser = useAuthContext();
+  const { setPressCall } = useCallContext();
 
   const agoraEngineRef = useRef();
 
@@ -40,6 +44,9 @@ function VideoCall({ navigation, route }) {
   const [minuteCall, setMinuteCall] = useState(0);
   const [count, setCount] = useState(0);
 
+  const [hasDialled, setHasDialled] = useState(false);
+  const [dataCall, setDataCall] = useState();
+
   useEffect(() => {
     // Initialize Agora engine when the app starts
     async function prepare() {
@@ -48,20 +55,16 @@ function VideoCall({ navigation, route }) {
       setShow(true);
     }
 
-    // firestore().collection('call').where()
-    // return () => {
-    //   setupVideoSDKEngine();
-    //   join();
-
-    // };
     prepare();
 
     const checkPuckOut = firestore()
       .collection('call')
-      .where('channelName', '==', idCall)
-      // .where()
+      .doc(idCall)
       .onSnapshot((res) => {
-        if (res.empty) {
+        if (res.exists) {
+          setHasDialled(res.data().hasDialled);
+          setDataCall(res.data());
+        } else {
           agoraEngineRef.current?.enableLocalAudio();
           agoraEngineRef.current?.disableVideo();
           agoraEngineRef.current?.leaveChannel();
@@ -172,12 +175,95 @@ function VideoCall({ navigation, route }) {
       console.log(e);
     }
   };
-  const leave = () => {
+
+  const setLeave = async () => {
+    const channelName = idCall;
+    setPressCall(true);
+    const collectChat = firestore().collection('ChatRoom').doc(channelName).collection('chats');
+    const chatRoom = firestore().collection('ChatRoom').doc(channelName);
+    let currentUserAlpha = {
+      email: dataCall.callerEmail,
+    };
+    const getDocChats = await collectChat.get();
+
+    if (getDocChats.empty) {
+      await addFirstMessage({
+        collectChat,
+        currentUser: currentUserAlpha,
+        data: `Cuộc gọi thoại\n${`${minuteCall === 0 ? '00' : minuteCall < 10 ? '0' + minuteCall : minuteCall}:${
+          secondCall === 0 ? '00' : secondCall < 10 ? '0' + secondCall : secondCall
+        }`}`,
+        callVideo: true,
+        isGroup: false,
+      });
+    } else {
+      const dataLast = await getlastMessage({ collectChat });
+
+      await addMessage({
+        collectChat,
+        currentUser: currentUserAlpha,
+        data: `Cuộc gọi thoại\n${`${minuteCall === 0 ? '00' : minuteCall < 10 ? '0' + minuteCall : minuteCall}:${
+          secondCall === 0 ? '00' : secondCall < 10 ? '0' + secondCall : secondCall
+        }`}`,
+        callVideo: true,
+        dataLast,
+        isGroup: false,
+      });
+    }
+    await chatRoom.update({
+      time: Date.now(),
+    });
+    await firestore().collection('call').doc(idCall).delete();
+    return setPressCall(false);
+  };
+
+  const leave = async () => {
     try {
       agoraEngineRef.current?.enableLocalAudio();
       agoraEngineRef.current?.disableVideo();
       agoraEngineRef.current?.leaveChannel();
-      firestore().collection('call').doc(idCall).delete();
+
+      if (hasDialled === true) {
+        await setLeave();
+      } else if (hasDialled === false) {
+        setPressCall(true);
+        await firestore().collection('call').doc(idCall).update({
+          deleteCall: true,
+        });
+        const collectChat = firestore().collection('ChatRoom').doc(idCall).collection('chats');
+        const chatRoom = firestore().collection('ChatRoom').doc(idCall);
+        let currentUserAlpha = {
+          email: dataCall.callerEmail,
+        };
+        const getDocChats = await collectChat.get();
+        if (getDocChats.empty) {
+          await addFirstMessage({
+            collectChat,
+            currentUser: currentUserAlpha,
+            data: 'Cuộc gọi nhỡ',
+            callVideo: true,
+            isGroup: false,
+          });
+        } else {
+          const dataLast = await getlastMessage({ collectChat });
+
+          await addMessage({
+            collectChat,
+            currentUser: currentUserAlpha,
+            data: 'Cuộc gọi nhỡ',
+            callVideo: true,
+            dataLast,
+            isGroup: false,
+          });
+        }
+        await chatRoom.update({
+          time: Date.now(),
+        });
+        await firestore().collection('call').doc(idCall).delete();
+        setPressCall(false);
+      } else {
+        await firestore().collection('call').doc(idCall).delete();
+      }
     } catch (e) {
       console.log(e);
     }
@@ -194,6 +280,11 @@ function VideoCall({ navigation, route }) {
   const switchCamera = () => {
     agoraEngineRef.current?.switchCamera();
   };
+
+  const handleCountdownComplete = () => {
+    console.log('Countdown completed!');
+  };
+
   return (
     <View style={styles.main}>
       <View style={styles.wrapper}>
@@ -226,11 +317,15 @@ function VideoCall({ navigation, route }) {
                   </Text>
                 </View>
               ) : (
-                <RtcSurfaceView canvas={{ uid: remoteUid }} style={{ width: '100%', height: 'auto' }} />
+                <RtcSurfaceView canvas={{ uid: remoteUid }} style={{ flex: 1 }} />
               )
             ) : (
               <View style={styles.wattingFriend}>
-                <Avatar image={{ uri: friendAvatar }} size={130} />
+                {/* <Avatar image={{ uri: friendAvatar }} size={130} /> */}
+                <CountdownCircle size={200} duration={60} onComplete={handleCountdownComplete}>
+                  {/* Bạn có thể thêm các thành phần khác ở đây */}
+                  <Text style={{ marginTop: 20 }}>Custom Component Inside Circle</Text>
+                </CountdownCircle>
                 <View style={{ flexDirection: 'row', marginTop: 30 }}>
                   <Text style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 25, marginRight: 10 }}>
                     Dialling
