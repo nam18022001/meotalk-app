@@ -1,5 +1,5 @@
 const sendNotifiCation = ({ currentUser, imageUrl, call, chatRoomId, infoFriend = [] }) => {
-  return infoFriend.forEach((info) => {
+  return infoFriend.forEach((info) =>
     fetch('https://fcm.googleapis.com/fcm/send', {
       method: 'POST',
       headers: {
@@ -24,8 +24,8 @@ const sendNotifiCation = ({ currentUser, imageUrl, call, chatRoomId, infoFriend 
           info: currentUser,
         },
       }),
-    });
-  });
+    }),
+  );
 };
 
 export default sendNotifiCation;
