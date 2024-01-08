@@ -4,7 +4,15 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import Faicons from 'react-native-vector-icons/FontAwesome5';
 import GlobalStyles from '../../../Components/GlobalStyles';
 
-function HeaderChat({ navigation, userFriend, onPressCallVideo, onChangeNameGroup, isGroup, chatRoomName = '' }) {
+function HeaderChat({
+  navigation,
+  userFriend,
+  onPressCallVideo,
+  onPressCallVoice,
+  onChangeNameGroup,
+  isGroup,
+  chatRoomName = '',
+}) {
   return (
     <AppBar
       titleContentStyle={{ marginLeft: -15 }}
@@ -54,6 +62,7 @@ function HeaderChat({ navigation, userFriend, onPressCallVideo, onChangeNameGrou
             style={{ width: 30, height: 30, marginRight: 5 }}
             icon={(props) => <Ionicons name="ios-call" size={20} color={GlobalStyles.colors.primary} />}
             color={GlobalStyles.colors.primary}
+            onPress={onPressCallVoice}
           />
           <IconButton
             style={{ width: 30, height: 30, marginRight: 5 }}

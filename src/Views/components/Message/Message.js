@@ -50,11 +50,13 @@ function Message({
                   ? styles.contentImage
                   : type === 'videoCall'
                   ? styles.content
-                  : type === 'call' && styles.contentCall,
+                  : type === 'call' && styles.content,
                 own && type === 'message' && styles.contentOwn,
                 own && type === 'videoCall' && styles.contentOwn,
+                own && type === 'call' && styles.contentOwn,
                 !own && type === 'message' && styles.contentFriend,
                 !own && type === 'videoCall' && styles.contentFriend,
+                !own && type === 'call' && styles.contentFriend,
               ]}
             >
               {type === 'image' ? (
@@ -140,7 +142,7 @@ function Message({
                 ? styles.contentImage
                 : type === 'videoCall'
                 ? styles.content
-                : type === 'call' && styles.contentCall,
+                : type === 'call' && styles.content,
               own && type === 'message' && styles.contentOwn,
               own && (type === 'videoCall' || type === 'call') && styles.contentOwn,
               !own && type === 'message' && styles.contentFriend,
@@ -174,10 +176,11 @@ function Message({
             ) : type === 'videoCall' || type === 'call' ? (
               <View style={styles.misscall}>
                 <Text style={{ fontSize: 14, color: '#fff', textAlign: 'left', flex: 1 }}>{data}</Text>
+
                 <TouchableNativeFeedback
                   background={TouchableNativeFeedback.Ripple('#000', false)}
                   onPress={() => {
-                    console.log('re call');
+                    type === 'videoCall' ? console.log('re call video') : console.log('re call');
                   }}
                 >
                   <View
@@ -196,12 +199,16 @@ function Message({
                       ) : (
                         <Faicons style={{ marginRight: 10 }} color={'#fff'} size={18} name="video" />
                       )
-                    ) : data === 'Cuộc gọi nhỡ' ? (
-                      <Faicons
-                        style={{ color: !own ? GlobalStyles.colors.dangerColor : '#fff', marginRight: 10 }}
-                        size={18}
-                        name="video-slash"
-                      />
+                    ) : type === 'call' ? (
+                      data === 'Cuộc gọi nhỡ' ? (
+                        <Faicons
+                          style={{ color: !own ? GlobalStyles.colors.dangerColor : '#fff', marginRight: 10 }}
+                          size={18}
+                          name="phone-slash"
+                        />
+                      ) : (
+                        <Faicons style={{ marginRight: 10 }} size={18} name="phone" color={'#fff'} />
+                      )
                     ) : (
                       <Faicons style={{ marginRight: 10 }} size={18} name="phone" color={'#fff'} />
                     )}

@@ -67,7 +67,7 @@ function PickUpGroup({ data, navigation }) {
         hasDialled,
       });
     }
-    return navigation.navigate(config.routes.videoCallGroup, {
+    return navigation.navigate(data.type === 'video' ? config.routes.videoCallGroup : config.routes.voiceCallGroup, {
       idCall: data.channelName,
       channelCall: data.channelCall,
       token: myToken,
@@ -131,7 +131,7 @@ function PickUpGroup({ data, navigation }) {
                 onPress={handlePickUpVideo}
               />
             ) : (
-              <ButtonAction icon={'ios-call'} colorBack={'#425F57'} colorIcon={'#DEF5E5'} />
+              <ButtonAction onPress={handlePickUpVideo} icon={'ios-call'} colorBack={'#425F57'} colorIcon={'#DEF5E5'} />
             )}
           </View>
         </View>

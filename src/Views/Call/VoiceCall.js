@@ -24,7 +24,7 @@ import { addFirstMessage, addMessage, getlastMessage } from '../../Services/conv
 import useCallContext from '../../hooks/useCallContext';
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 
-function VideoCall({ navigation, route }) {
+function VoiceCall({ navigation, route }) {
   const { idCall, token, uid, friendAvatar, friendName, channelCall } = route.params;
 
   const currentUser = useAuthContext();
@@ -35,14 +35,11 @@ function VideoCall({ navigation, route }) {
   const [show, setShow] = useState(false);
   const [isJoined, setIsJoined] = useState(false);
   const [muteStatus, setMuteStatus] = useState(true);
-  const [videoStatus, setVideoStatus] = useState(true);
-  const [videoRemoteStatus, setVideoRemoteStatus] = useState(1);
+
   const [remoteUid, setRemoteUid] = useState(0);
-  const [message, setMessage] = useState('');
-  const [caller, setCaller] = useState({});
+
   const [secondCall, setSecondCall] = useState(0);
   const [minuteCall, setMinuteCall] = useState(0);
-  const [count, setCount] = useState(0);
 
   const [hasDialled, setHasDialled] = useState(false);
   const [dataCall, setDataCall] = useState();
@@ -66,7 +63,6 @@ function VideoCall({ navigation, route }) {
           setDataCall(res.data());
         } else {
           agoraEngineRef.current?.disableAudio();
-          agoraEngineRef.current?.disableVideo();
           agoraEngineRef.current?.leaveChannel();
           return navigation.goBack();
         }
@@ -110,6 +106,8 @@ function VideoCall({ navigation, route }) {
     };
   }, [secondCall, remoteUid]);
 
+  useEffect(() => {}, []);
+
   const setupVideoSDKEngine = async () => {
     try {
       // use the helper function to get permissions
@@ -118,47 +116,36 @@ function VideoCall({ navigation, route }) {
       }
       agoraEngineRef.current = createAgoraRtcEngine();
       const agoraEngine = agoraEngineRef.current;
-
+      agoraEngine.enableAudioVolumeIndication();
+      agoraEngineRef.current?.setDefaultAudioRouteToSpeakerphone(false);
+      // agoraEngineRef.current?.setEnableSpeakerphone(speakerPhone);
       agoraEngine.registerEventHandler({
         onJoinChannelSuccess: () => {
-          showMessage('Successfully joined the channel ' + channelCall);
+          console.log('Successfully joined the channel ' + channelCall);
           setIsJoined(true);
         },
         onUserJoined: (_connection, Uid) => {
-          showMessage('Remote user joined with uid ' + Uid);
+          console.log('Remote user joined with uid ' + Uid);
           setRemoteUid(Uid);
         },
         onUserOffline: (_connection, Uid) => {
-          showMessage('Remote user left the channel. uid: ' + Uid);
+          console.log('Remote user left the channel. uid: ' + Uid);
           agoraEngineRef.current?.disableAudio();
-          agoraEngineRef.current?.disableVideo();
           agoraEngineRef.current?.leaveChannel();
           setRemoteUid(0);
           firestore().collection('call').doc(idCall).delete();
         },
-        onRemoteVideoStateChanged: (_connection, Uid, state) => {
-          setVideoRemoteStatus(state);
+        onAudioVolumeIndication: (_connection, volumes) => {
+          console.log(_connection, volumes);
         },
       });
       agoraEngine.initialize({
         appId: config.configAgora.appId,
         channelProfile: ChannelProfileType.ChannelProfileLiveBroadcasting,
       });
-      agoraEngine.enableVideo();
       agoraEngine.enableAudio();
     } catch (e) {
       console.log(e);
-    }
-  };
-  function showMessage(msg) {
-    setMessage(msg);
-  }
-  const getPermission = async () => {
-    if (Platform.OS === 'android') {
-      await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-      ]);
     }
   };
   const join = async () => {
@@ -167,12 +154,24 @@ function VideoCall({ navigation, route }) {
     }
     try {
       agoraEngineRef.current?.setChannelProfile(ChannelProfileType.ChannelProfileCommunication);
-      agoraEngineRef.current?.startPreview();
+
       agoraEngineRef.current?.joinChannel(token, channelCall, uid, {
         clientRoleType: ClientRoleType.ClientRoleBroadcaster,
       });
     } catch (e) {
       console.log(e);
+    }
+  };
+  const getPermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.requestMultiple([PermissionsAndroid.PERMISSIONS.RECORD_AUDIO]);
+        if (granted['android.permission.RECORD_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('You can use the mic');
+        } else {
+          console.log('Permission denied');
+        }
+      } catch (error) {}
     }
   };
 
@@ -188,27 +187,25 @@ function VideoCall({ navigation, route }) {
       email: dataCall.callerEmail,
     };
     const getDocChats = await collectChat.get();
-
     if (getDocChats.empty) {
       await addFirstMessage({
         collectChat,
         currentUser: currentUserAlpha,
-        data: `Cuộc gọi Video\n${`${minuteCall === 0 ? '00' : minuteCall < 10 ? '0' + minuteCall : minuteCall}:${
+        data: `Cuộc gọi thoại\n${`${minuteCall === 0 ? '00' : minuteCall < 10 ? '0' + minuteCall : minuteCall}:${
           secondCall === 0 ? '00' : secondCall < 10 ? '0' + secondCall : secondCall
         }`}`,
-        callVideo: true,
+        call: true,
         isGroup: false,
       });
     } else {
       const dataLast = await getlastMessage({ collectChat });
-
       await addMessage({
         collectChat,
         currentUser: currentUserAlpha,
-        data: `Cuộc gọi Video\n${`${minuteCall === 0 ? '00' : minuteCall < 10 ? '0' + minuteCall : minuteCall}:${
+        data: `Cuộc gọi thoại\n${`${minuteCall === 0 ? '00' : minuteCall < 10 ? '0' + minuteCall : minuteCall}:${
           secondCall === 0 ? '00' : secondCall < 10 ? '0' + secondCall : secondCall
         }`}`,
-        callVideo: true,
+        call: true,
         dataLast,
         isGroup: false,
       });
@@ -218,42 +215,6 @@ function VideoCall({ navigation, route }) {
     });
     await firestore().collection('call').doc(idCall).delete();
     return setPressCall(false);
-  };
-
-  const leave = async () => {
-    try {
-      agoraEngineRef.current?.disableAudio();
-      agoraEngineRef.current?.disableVideo();
-      agoraEngineRef.current?.leaveChannel();
-
-      if (hasDialled === true) {
-        await setLeave();
-      } else if (hasDialled === false) {
-        await handleMissCall();
-      } else {
-        await firestore().collection('call').doc(idCall).delete();
-      }
-    } catch (e) {
-      console.log(e);
-    }
-    return navigation.goBack();
-  };
-  const mute = () => {
-    agoraEngineRef.current?.enableLocalAudio(!muteStatus);
-    setMuteStatus(!muteStatus);
-  };
-  const video = () => {
-    agoraEngineRef.current?.enableLocalVideo(!videoStatus);
-    setVideoStatus(!videoStatus);
-  };
-  const switchCamera = () => {
-    agoraEngineRef.current?.switchCamera();
-  };
-  const handleCompelteCallOut = async () => {
-    if (hasDialled === false) {
-      await leave();
-      return navigation.goBack();
-    }
   };
 
   const handleMissCall = async () => {
@@ -272,7 +233,7 @@ function VideoCall({ navigation, route }) {
         collectChat,
         currentUser: currentUserAlpha,
         data: 'Cuộc gọi nhỡ',
-        callVideo: true,
+        call: true,
         isGroup: false,
       });
     } else {
@@ -282,7 +243,7 @@ function VideoCall({ navigation, route }) {
         collectChat,
         currentUser: currentUserAlpha,
         data: 'Cuộc gọi nhỡ',
-        callVideo: true,
+        call: true,
         dataLast,
         isGroup: false,
       });
@@ -294,105 +255,75 @@ function VideoCall({ navigation, route }) {
     setPressCall(false);
   };
 
+  const leave = async () => {
+    try {
+      agoraEngineRef.current?.disableAudio();
+      agoraEngineRef.current?.leaveChannel();
+
+      if (hasDialled === true) {
+        await setLeave();
+      } else if (hasDialled === false) {
+        await handleMissCall();
+      } else {
+        await firestore().collection('call').doc(idCall).delete();
+      }
+    } catch (e) {
+      console.log(e);
+    }
+    return navigation.goBack();
+  };
+  const mute = () => {
+    agoraEngineRef.current?.enableLocalAudio(!muteStatus);
+    setMuteStatus(!muteStatus);
+  };
+  const switchSpeaker = () => {
+    agoraEngineRef.current?.setEnableSpeakerphone(!agoraEngineRef.current.isSpeakerphoneEnabled());
+  };
+  const handleCompelteCallOut = async () => {
+    if (hasDialled === false) {
+      await leave();
+      return navigation.goBack();
+    }
+  };
   return (
     <View style={styles.main}>
       <View style={styles.wrapper}>
-        {isJoined && remoteUid !== 0 && (
-          <View
-            style={{
-              position: 'absolute',
-              width: '100%',
-              justifyContent: 'center',
-              alignItems: 'center',
-              top: 20,
-              zIndex: 99,
-            }}
-          >
-            <Text style={{ fontFamily: GlobalStyles.fonts.fontAudiowide, fontSize: 16, color: '#829460' }}>
-              {minuteCall === 0 ? '00' : minuteCall < 10 ? '0' + minuteCall : minuteCall}
-              {' : '}
-              {secondCall === 0 ? '00' : secondCall < 10 ? '0' + secondCall : secondCall}
-            </Text>
-          </View>
-        )}
         <View style={styles.videos}>
-          <View key={1} style={styles.videoRemoteView}>
-            {remoteUid !== 0 ? (
-              videoRemoteStatus === 0 ? (
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                  <Avatar image={{ uri: friendAvatar }} size={130} />
-                  <Text style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 16, marginTop: 10 }}>
-                    Camera {friendName} đang tắt
-                  </Text>
-                </View>
-              ) : (
-                <RtcSurfaceView canvas={{ uid: remoteUid }} style={{ flex: 1 }} />
-              )
-            ) : (
-              <View style={styles.wattingFriend}>
-                <CountdownCircleTimer
-                  isPlaying
-                  duration={60}
-                  colors={['#004777', '#F7B801', '#A30000', '#A30000']}
-                  colorsTime={[60, 40, 20, 0]}
-                  onComplete={handleCompelteCallOut}
-                  size={130}
-                  strokeWidth={5}
-                >
-                  {() => <Avatar image={{ uri: friendAvatar }} size={120} />}
-                </CountdownCircleTimer>
-                <View style={{ flexDirection: 'row', marginTop: 30 }}>
-                  <Text style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 25, marginRight: 10 }}>
-                    Dialling
-                  </Text>
-                  <Loader />
-                </View>
-              </View>
-            )}
-          </View>
-          <View style={{ flex: 1, alignItems: 'flex-end' }}>
-            <IconButton onPress={switchCamera} icon={<Ionicon name="ios-sync-circle" size={30} />} />
-            <View style={styles.myVideoView} key={remoteUid + 100}>
-              {show &&
-                (videoStatus ? (
-                  <RtcSurfaceView
-                    canvas={{ uid: 0 }}
-                    style={{
-                      position: 'absolute',
-                      height: '100%',
-                      width: '100%',
-                      zIndex: 50,
-                    }}
-                  />
-                ) : (
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: GlobalStyles.colors.powderGrey,
-                    }}
-                  >
-                    <Avatar image={{ uri: currentUser.photoURL, cache: 'force-cache' }} size={70} />
-                  </View>
-                ))}
-              <View style={styles.status}>
-                <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-evenly' }}>
-                  {videoStatus ? (
-                    <FontAwesome5 name={'video'} size={15} color="#2C3639" />
-                  ) : (
-                    <FontAwesome5 name={'video-slash'} size={15} color="#2C3639" />
-                  )}
-                  <View style={{ width: 1, height: '100%', backgroundColor: '#2C3639' }}></View>
-                  {muteStatus ? (
-                    <Ionicon name={'ios-mic'} size={15} color="#2C3639" />
-                  ) : (
-                    <Ionicon name={'ios-mic-off'} size={15} color="#2C3639" />
-                  )}
-                </View>
-              </View>
+          {hasDialled ? (
+            <Avatar size={130} image={{ uri: friendAvatar }} />
+          ) : (
+            <CountdownCircleTimer
+              isPlaying
+              duration={60}
+              colors={['#004777', '#F7B801', '#A30000', '#A30000']}
+              colorsTime={[60, 40, 20, 0]}
+              onComplete={handleCompelteCallOut}
+              size={130}
+              strokeWidth={5}
+            >
+              {() => <Avatar image={{ uri: friendAvatar }} size={120} />}
+            </CountdownCircleTimer>
+          )}
+          <Text style={{ fontSize: 20, fontFamily: GlobalStyles.fonts.fontSemiBold, marginVertical: 10 }}>
+            {friendName}
+          </Text>
+          {hasDialled ? (
+            isJoined &&
+            remoteUid !== 0 && (
+              <Text style={{ fontFamily: GlobalStyles.fonts.fontAudiowide, fontSize: 16, color: '#829460' }}>
+                {minuteCall === 0 ? '00' : minuteCall < 10 ? '0' + minuteCall : minuteCall}
+                {' : '}
+                {secondCall === 0 ? '00' : secondCall < 10 ? '0' + secondCall : secondCall}
+              </Text>
+            )
+          ) : (
+            <View style={{ flexDirection: 'row', marginTop: 30 }}>
+              <Text style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 25, marginRight: 10 }}>
+                Dialling
+              </Text>
+              <Loader />
             </View>
-          </View>
+          )}
         </View>
         <View style={styles.actions}>
           <ButtonAction
@@ -402,16 +333,31 @@ function VideoCall({ navigation, route }) {
           />
           <ButtonAction icon={'ios-call'} onPress={leave} colorIcon="red" />
           <ButtonAction
-            icon={videoStatus ? 'video' : 'video-slash'}
-            colorIcon={!videoStatus ? '#F65A83' : '#38E54D'}
-            fontawe
-            onPress={video}
+            icon={
+              agoraEngineRef !== undefined &&
+              agoraEngineRef.current !== undefined &&
+              Object.keys(agoraEngineRef.current).length > 0 &&
+              agoraEngineRef.current.isSpeakerphoneEnabled()
+                ? 'volume-up'
+                : 'volume-off'
+            }
+            colorIcon={
+              agoraEngineRef !== undefined &&
+              agoraEngineRef.current !== undefined &&
+              Object.keys(agoraEngineRef.current).length > 0 &&
+              agoraEngineRef.current.isSpeakerphoneEnabled()
+                ? '#38E54D'
+                : '#FFF'
+            }
+            onPress={switchSpeaker}
+            fontawe={true}
           />
         </View>
       </View>
     </View>
   );
 }
+
 function ButtonAction({ children, icon, onPress, fontawe, colorIcon }) {
   return (
     <View style={styles.action}>
@@ -427,6 +373,7 @@ function ButtonAction({ children, icon, onPress, fontawe, colorIcon }) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   main: {
     backgroundColor: '#fff',
@@ -441,20 +388,9 @@ const styles = StyleSheet.create({
   videos: {
     flex: 1,
     position: 'relative',
-    flexDirection: 'row',
-  },
-  myVideoView: {
-    justifyContent: 'flex-end',
-    height: 180,
-    width: 140,
-    zIndex: 99999999,
-  },
-  videoRemoteView: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   actions: {
     position: 'absolute',
@@ -482,4 +418,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-export default VideoCall;
+
+export default VoiceCall;

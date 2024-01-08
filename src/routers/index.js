@@ -9,6 +9,8 @@ import Chat from '../Views/Chat';
 import VideoCall from '../Views/Call/VideoCall';
 import NewChat from '../Views/NewChat';
 import VideoCallGroup from '../Views/Call/VideoCallGroup';
+import VoiceCall from '../Views/Call/VoiceCall';
+import VoiceCallGroup from '../Views/Call/VoiceCallGroup';
 
 //Layout
 
@@ -21,7 +23,9 @@ const privateRoutes = [
   { path: config.routes.newChat, component: NewChat },
   { path: config.routes.chat, component: Chat },
   { path: config.routes.videoCall, component: VideoCall },
+  { path: config.routes.voiceCall, component: VoiceCall },
   { path: config.routes.videoCallGroup, component: VideoCallGroup },
+  { path: config.routes.voiceCallGroup, component: VoiceCallGroup },
   { path: config.routes.profileFriends, component: FriendProfile },
 ];
 

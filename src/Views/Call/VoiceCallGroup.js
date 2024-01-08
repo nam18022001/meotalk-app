@@ -25,7 +25,7 @@ import { addFirstMessage, addMessage, getlastMessage } from '../../Services/conv
 import useCallContext from '../../hooks/useCallContext';
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 
-function VideoCallGroup({ navigation, route }) {
+function VoiceCallGroup({ navigation, route }) {
   const { idCall, token, uid, channelCall, friendsInfo, groupName, reciever } = route.params;
 
   const currentUser = useAuthContext();
@@ -36,13 +36,12 @@ function VideoCallGroup({ navigation, route }) {
   const [isJoined, setIsJoined] = useState(false);
 
   const [remoteUid, setRemoteUid] = useState([]);
-  const [videoRemoteStatus, setVideoRemoteStatus] = useState([]);
 
   const [secondCall, setSecondCall] = useState(0);
   const [minuteCall, setMinuteCall] = useState(0);
 
   const [muteStatus, setMuteStatus] = useState(true);
-  const [videoStatus, setVideoStatus] = useState(true);
+  const [speakerPhone, setSpeakerPhone] = useState(false);
 
   const [dataCall, setDataCall] = useState();
 
@@ -133,6 +132,8 @@ function VideoCallGroup({ navigation, route }) {
       }
       agoraEngineRef.current = createAgoraRtcEngine();
       const agoraEngine = agoraEngineRef.current;
+      agoraEngine.enableAudioVolumeIndication();
+      agoraEngineRef.current?.setDefaultAudioRouteToSpeakerphone(false);
 
       agoraEngine.registerEventHandler({
         onJoinChannelSuccess: () => {
@@ -152,16 +153,9 @@ function VideoCallGroup({ navigation, route }) {
         onUserOffline: (_connection, Uid) => {
           console.log('Remote user left the channel. uid: ' + Uid);
           setRemoteUid((prevUsers) => prevUsers.filter((v) => v !== Uid));
-          setVideoRemoteStatus((prevUsers) => prevUsers.filter((v) => v.Uid !== Uid));
         },
-        onRemoteVideoStateChanged: (_connection, Uid, state) => {
-          setVideoRemoteStatus((prevUsers) => {
-            if (prevUsers.filter((v) => v.Uid === Uid).length === 0) {
-              return [...prevUsers, { Uid, state }];
-            } else {
-              return [...prevUsers.filter((v) => v.Uid !== Uid), { Uid, state }];
-            }
-          });
+        onAudioVolumeIndication: (_connection, volumes) => {
+          console.log(_connection, volumes);
         },
       });
       agoraEngine.initialize({
@@ -177,10 +171,14 @@ function VideoCallGroup({ navigation, route }) {
 
   const getPermission = async () => {
     if (Platform.OS === 'android') {
-      await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-      ]);
+      try {
+        const granted = await PermissionsAndroid.requestMultiple([PermissionsAndroid.PERMISSIONS.RECORD_AUDIO]);
+        if (granted['android.permission.RECORD_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('You can use the mic');
+        } else {
+          console.log('Permission denied');
+        }
+      } catch (error) {}
     }
   };
   const join = async () => {
@@ -189,7 +187,7 @@ function VideoCallGroup({ navigation, route }) {
     }
     try {
       agoraEngineRef.current?.setChannelProfile(ChannelProfileType.ChannelProfileCommunication);
-      agoraEngineRef.current?.startPreview();
+
       agoraEngineRef.current?.joinChannel(token, channelCall, uid, {
         clientRoleType: ClientRoleType.ClientRoleBroadcaster,
       });
@@ -216,10 +214,10 @@ function VideoCallGroup({ navigation, route }) {
         await addFirstMessage({
           collectChat,
           currentUser: currentUserAlpha,
-          data: `Cuộc gọi Video\n${`${minuteCall === 0 ? '00' : minuteCall < 10 ? '0' + minuteCall : minuteCall}:${
+          data: `Cuộc gọi thoại\n${`${minuteCall === 0 ? '00' : minuteCall < 10 ? '0' + minuteCall : minuteCall}:${
             secondCall === 0 ? '00' : secondCall < 10 ? '0' + secondCall : secondCall
           }`}`,
-          callVideo: true,
+          call: true,
           isGroup: true,
           photoSender: dataCall.callerAvatar,
         });
@@ -229,10 +227,10 @@ function VideoCallGroup({ navigation, route }) {
         await addMessage({
           collectChat,
           currentUser: currentUserAlpha,
-          data: `Cuộc gọi Video\n${`${minuteCall === 0 ? '00' : minuteCall < 10 ? '0' + minuteCall : minuteCall}:${
+          data: `Cuộc gọi thoại\n${`${minuteCall === 0 ? '00' : minuteCall < 10 ? '0' + minuteCall : minuteCall}:${
             secondCall === 0 ? '00' : secondCall < 10 ? '0' + secondCall : secondCall
           }`}`,
-          callVideo: true,
+          call: true,
           dataLast,
           isGroup: true,
           photoSender: dataCall.callerAvatar,
@@ -254,7 +252,6 @@ function VideoCallGroup({ navigation, route }) {
       return setPressCall(false);
     }
   };
-
   const leave = async (auto = false) => {
     try {
       agoraEngineRef.current?.enableLocalAudio();
@@ -280,21 +277,18 @@ function VideoCallGroup({ navigation, route }) {
     }
     return navigation.goBack();
   };
+
   const mute = () => {
     agoraEngineRef.current?.enableLocalAudio(!muteStatus);
     setMuteStatus(!muteStatus);
   };
-  const video = () => {
-    agoraEngineRef.current?.enableLocalVideo(!videoStatus);
-    setVideoStatus(!videoStatus);
+  const switchSpeaker = () => {
+    agoraEngineRef.current?.setEnableSpeakerphone(!agoraEngineRef.current.isSpeakerphoneEnabled());
   };
-  const switchCamera = () => {
-    agoraEngineRef.current?.switchCamera();
-  };
-
   const handleCompelteCallOut = async () => {
     if (hasDialled === false) {
-      await leave(false);
+      await leave();
+      return navigation.goBack();
     }
   };
 
@@ -314,7 +308,7 @@ function VideoCallGroup({ navigation, route }) {
         collectChat,
         currentUser: currentUserAlpha,
         data: 'Cuộc gọi nhỡ',
-        callVideo: true,
+        call: true,
         isGroup: true,
         photoSender: dataCall.callerAvatar,
       });
@@ -325,7 +319,7 @@ function VideoCallGroup({ navigation, route }) {
         collectChat,
         currentUser: currentUserAlpha,
         data: 'Cuộc gọi nhỡ',
-        callVideo: true,
+        call: true,
         dataLast,
         isGroup: true,
         photoSender: dataCall.callerAvatar,
@@ -337,6 +331,7 @@ function VideoCallGroup({ navigation, route }) {
     await firestore().collection('call').doc(idCall).delete();
     setPressCall(false);
   };
+
   return (
     <View style={styles.main}>
       <View style={styles.wrapper}>
@@ -359,141 +354,36 @@ function VideoCallGroup({ navigation, route }) {
           </View>
         )}
         <View style={styles.videos}>
-          <View key={1} style={styles.videoRemoteView}>
+          <View style={styles.wattingFriend}>
             {remoteUid.length > 0 && hasDialled === true ? (
-              remoteUid.map((id, index) => {
-                const videoRemoteState = videoRemoteStatus.filter((v) => v.Uid === id)[0];
-                const infoRemote = friendsInfo.filter((v) => v.id === id)[0];
-
-                if (reciever === false) {
-                  if (
-                    videoRemoteState !== undefined &&
-                    typeof videoRemoteState === 'object' &&
-                    videoRemoteStatus.length > 0 &&
-                    videoRemoteState.state !== undefined &&
-                    videoRemoteState['state'] !== 0
-                  ) {
-                    return (
-                      <View
-                        key={index}
-                        style={{
-                          borderColor: '#fff',
-                          borderStyle: 'solid',
-                          borderTopWidth: 1,
-                          borderEndWidth: 1,
-                          flex: 1,
-                        }}
-                      >
-                        <RtcSurfaceView
-                          canvas={{ uid: id }}
-                          style={{
-                            flex: 1,
-                          }}
-                        />
-                      </View>
-                    );
-                  } else {
-                    return (
-                      <View key={index} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                        <Avatar image={{ uri: infoRemote.photoURL }} size={100} />
-                        <Text style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 16, marginTop: 10 }}>
-                          Camera {infoRemote.displayName} đang tắt
-                        </Text>
-                      </View>
-                    );
-                  }
-                } else if (reciever === true) {
-                  if (
-                    typeof videoRemoteState === 'object' &&
-                    videoRemoteState.state !== undefined &&
-                    videoRemoteState !== undefined &&
-                    videoRemoteStatus.length > 0 &&
-                    videoRemoteState['state'] !== 0
-                  ) {
-                    return (
-                      <View
-                        key={index}
-                        style={{
-                          borderColor: '#fff',
-                          borderStyle: 'solid',
-                          borderTopWidth: 1,
-                          borderEndWidth: 1,
-                          flex: 1,
-                        }}
-                      >
-                        <RtcSurfaceView
-                          canvas={{ uid: id }}
-                          style={{
-                            flex: 1,
-                          }}
-                        />
-                      </View>
-                    );
-                  } else if (
-                    typeof videoRemoteState === 'object' &&
-                    videoRemoteState.state !== undefined &&
-                    videoRemoteState !== undefined &&
-                    videoRemoteStatus.length > 0 &&
-                    videoRemoteState['state'] === 0
-                  ) {
-                    return (
-                      <View key={index} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                        <Avatar image={{ uri: infoRemote.photoURL }} size={100} />
-                        <Text style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 16, marginTop: 10 }}>
-                          Camera {infoRemote.displayName} đang tắt
-                        </Text>
-                      </View>
-                    );
-                  } else if (remoteUid.length > 0 && videoRemoteStatus.length < remoteUid.length) {
-                    if (
-                      typeof videoRemoteState === 'object' &&
-                      videoRemoteState !== undefined &&
-                      videoRemoteState.state !== undefined &&
-                      videoRemoteStatus.length > 0 &&
-                      videoRemoteState['state'] !== 0
-                    ) {
-                      return (
-                        <View
-                          key={index}
-                          style={{
-                            borderColor: '#fff',
-                            borderStyle: 'solid',
-                            borderTopWidth: 1,
-                            borderEndWidth: 1,
-                            flex: 1,
-                          }}
-                        >
-                          <RtcSurfaceView
-                            canvas={{ uid: id }}
-                            style={{
-                              flex: 1,
-                            }}
-                          />
-                        </View>
-                      );
-                    } else {
-                      return (
-                        <View key={index} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                          <Avatar image={{ uri: infoRemote.photoURL }} size={100} />
-                          <Text style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 16, marginTop: 10 }}>
-                            Camera {infoRemote.displayName} đang tắt
-                          </Text>
-                        </View>
-                      );
-                    }
-                  } else return null;
-                } else return null;
-              })
+              <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap' }}>
+                {remoteUid.map((id, index) => {
+                  const infoRemote = friendsInfo.filter((v) => v.id === id)[0];
+                  return (
+                    <View
+                      key={index}
+                      style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        flexDirection: 'column',
+                        margin: 5,
+                      }}
+                    >
+                      <Avatar image={{ uri: infoRemote.photoURL }} size={80} />
+                      <Text style={{ fontFamily: GlobalStyles.fonts.fontSemiBold, fontSize: 16, marginTop: 10 }}>
+                        {infoRemote.displayName}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
             ) : hasDialled === false ? (
-              <View style={styles.wattingFriend}>
+              <Fragment>
                 <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                   {friendsInfo.slice(0, 3).map((info, index) => (
                     <View key={index} style={{ marginLeft: -25 }}>
-                      <Avatar
-                        style={{ borderColor: '#fff', borderStyle: 'solid', borderWidth: 2 }}
-                        image={{ uri: info.photoURL }}
-                        size={80}
-                      />
+                      <Avatar image={{ uri: info.photoURL }} size={80} />
                       {friendsInfo.length > 3 && index === 2 && (
                         <View
                           style={{
@@ -532,7 +422,7 @@ function VideoCallGroup({ navigation, route }) {
                   </Text>
                   <Loader />
                 </View>
-              </View>
+              </Fragment>
             ) : (
               <View style={styles.wattingFriend}>
                 <View style={{ flexDirection: 'row', marginTop: 20 }}>
@@ -544,49 +434,6 @@ function VideoCallGroup({ navigation, route }) {
               </View>
             )}
           </View>
-          <View style={{ flex: 1, alignItems: 'flex-end' }}>
-            <IconButton onPress={switchCamera} icon={<Ionicon name="ios-sync-circle" size={30} />} />
-            <View style={styles.myVideoView} key={remoteUid + 100}>
-              {show &&
-                (videoStatus ? (
-                  <RtcSurfaceView
-                    canvas={{ uid: 0 }}
-                    style={{
-                      position: 'absolute',
-                      height: '100%',
-                      width: '100%',
-                      zIndex: 50,
-                    }}
-                  />
-                ) : (
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: GlobalStyles.colors.powderGrey,
-                    }}
-                  >
-                    <Avatar image={{ uri: currentUser.photoURL, cache: 'force-cache' }} size={70} />
-                  </View>
-                ))}
-              <View style={styles.status}>
-                <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-evenly' }}>
-                  {videoStatus ? (
-                    <FontAwesome5 name={'video'} size={15} color="#2C3639" />
-                  ) : (
-                    <FontAwesome5 name={'video-slash'} size={15} color="#2C3639" />
-                  )}
-                  <View style={{ width: 1, height: '100%', backgroundColor: '#2C3639' }}></View>
-                  {muteStatus ? (
-                    <Ionicon name={'ios-mic'} size={15} color="#2C3639" />
-                  ) : (
-                    <Ionicon name={'ios-mic-off'} size={15} color="#2C3639" />
-                  )}
-                </View>
-              </View>
-            </View>
-          </View>
         </View>
         <View style={styles.actions}>
           <ButtonAction
@@ -596,16 +443,31 @@ function VideoCallGroup({ navigation, route }) {
           />
           <ButtonAction icon={'ios-call'} onPress={() => leave(false)} colorIcon="red" />
           <ButtonAction
-            icon={videoStatus ? 'video' : 'video-slash'}
-            colorIcon={!videoStatus ? '#F65A83' : '#38E54D'}
-            fontawe
-            onPress={video}
+            icon={
+              agoraEngineRef !== undefined &&
+              agoraEngineRef.current !== undefined &&
+              Object.keys(agoraEngineRef.current).length > 0 &&
+              agoraEngineRef.current.isSpeakerphoneEnabled()
+                ? 'volume-up'
+                : 'volume-off'
+            }
+            colorIcon={
+              agoraEngineRef !== undefined &&
+              agoraEngineRef.current !== undefined &&
+              Object.keys(agoraEngineRef.current).length > 0 &&
+              agoraEngineRef.current.isSpeakerphoneEnabled()
+                ? '#38E54D'
+                : '#FFF'
+            }
+            onPress={switchSpeaker}
+            fontawe={true}
           />
         </View>
       </View>
     </View>
   );
 }
+
 function ButtonAction({ icon, onPress, fontawe, colorIcon }) {
   return (
     <View style={styles.action}>
@@ -636,6 +498,8 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   myVideoView: {
     justifyContent: 'flex-end',
@@ -677,4 +541,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-export default VideoCallGroup;
+export default VoiceCallGroup;

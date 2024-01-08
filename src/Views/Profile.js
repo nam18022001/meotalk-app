@@ -56,12 +56,12 @@ function Profile({ navigation, route }) {
             <View style={styles.wrapaction}>
               <TouchableNativeFeedback
                 background={TouchableNativeFeedback.Ripple('#123944', true)}
-                onPress={() => {
-                  firestore().collection('users').doc(currentUser.uid).update({
+                onPress={async () => {
+                  await firestore().collection('users').doc(currentUser.uid).update({
                     fcmToken: '',
                   });
-                  auth().signOut();
-                  GoogleSignin.signOut();
+                  await auth().signOut();
+                  await GoogleSignin.signOut();
                 }}
               >
                 <View style={styles.action}>

@@ -9,7 +9,7 @@ import Input from './components/Input';
 import Message from './components/Message';
 import ModelInput from '../Components/Modal/ModalInput';
 import { toastError, toastWarning } from '../hooks/useToast';
-import { handleCallVideo } from '../functions/call';
+import { handleCallVideo, handleCallVoice } from '../functions/call';
 import useAuthContext from '../hooks/useAuthContext';
 import useCallContext from '../hooks/useCallContext';
 
@@ -237,6 +237,19 @@ function Chat({ navigation, route }) {
       <HeaderChat
         navigation={navigation}
         userFriend={infoFriend}
+        onPressCallVoice={() =>
+          handleCallVoice({
+            chatRoomId: dataRoom.chatRoomID,
+            userInfo: infoFriend,
+            currentUser,
+            setPressCall: setPressCall,
+            navigation,
+            groupName:
+              chatRoomName && chatRoomName.length > 0
+                ? chatRoomName
+                : infoFriend.map((info, index) => info.displayName + `${index === infoFriend.length - 1 ? '' : ', '} `),
+          })
+        }
         onPressCallVideo={() =>
           handleCallVideo({
             chatRoomId: dataRoom.chatRoomID,

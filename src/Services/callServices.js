@@ -60,6 +60,7 @@ export const addCallMessages = async ({
   tokenCaller,
   tokenReciever,
   uidReciever,
+  voiceCall = false,
 }) => {
   if (isGroup) {
     let groupRecieverUid = [];
@@ -97,30 +98,33 @@ export const addCallMessages = async ({
           channelCall: channelCall,
           tokenCaller: tokenCaller,
           tokenReciever: tokenReciever,
-          type: 'video',
+          type: voiceCall ? 'voice' : 'video',
           isGroup: true,
         }))
     );
   } else {
-    return await firestore().collection('call').doc(chatRoomId).set({
-      callerId: uidCaller,
-      callerUid: currentUser.uid,
-      callerEmail: currentUser.email,
-      callerName: currentUser.displayName,
-      callerAvatar: currentUser.photoURL,
-      recieverId: uidReciever[0],
-      recieverUid: userInfo[0].uid,
-      receiverEmail: userInfo[0].email,
-      receiverName: userInfo[0].displayName,
-      receiverAvatar: userInfo[0].photoURL,
-      hasDialled: false,
-      deleteCall: false,
-      channelName: channelName,
-      channelCall: channelCall,
-      tokenCaller: tokenCaller,
-      tokenReciever: tokenReciever[0],
-      type: 'video',
-      isGroup: false,
-    });
+    return await firestore()
+      .collection('call')
+      .doc(chatRoomId)
+      .set({
+        callerId: uidCaller,
+        callerUid: currentUser.uid,
+        callerEmail: currentUser.email,
+        callerName: currentUser.displayName,
+        callerAvatar: currentUser.photoURL,
+        recieverId: uidReciever[0],
+        recieverUid: userInfo[0].uid,
+        receiverEmail: userInfo[0].email,
+        receiverName: userInfo[0].displayName,
+        receiverAvatar: userInfo[0].photoURL,
+        hasDialled: false,
+        deleteCall: false,
+        channelName: channelName,
+        channelCall: channelCall,
+        tokenCaller: tokenCaller,
+        tokenReciever: tokenReciever[0],
+        type: voiceCall ? 'voice' : 'video',
+        isGroup: false,
+      });
   }
 };

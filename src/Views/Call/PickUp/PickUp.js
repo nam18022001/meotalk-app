@@ -24,7 +24,8 @@ function PickUp({ data, navigation }) {
         collectChat,
         currentUser: currentUserAlpha,
         data: 'Cuộc gọi nhỡ',
-        callVideo: true,
+        callVideo: data.type === 'video' ? true : false,
+        call: data.type === 'voice' ? true : false,
         isGroup: false,
       });
     } else {
@@ -33,7 +34,8 @@ function PickUp({ data, navigation }) {
         collectChat,
         currentUser: currentUserAlpha,
         data: 'Cuộc gọi nhỡ',
-        callVideo: true,
+        callVideo: data.type === 'video' ? true : false,
+        call: data.type === 'voice' ? true : false,
         dataLast,
         isGroup: false,
       });
@@ -43,11 +45,12 @@ function PickUp({ data, navigation }) {
     });
     await firestore().collection('call').doc(data.channelName).delete();
   };
+
   const handlePickUpVideo = async () => {
     await firestore().collection('call').doc(data.channelName).update({
       hasDialled: true,
     });
-    return navigation.navigate(config.routes.videoCall, {
+    return navigation.navigate(data.type === 'video' ? config.routes.videoCall : config.routes.voiceCall, {
       idCall: data.channelName,
       token: data.tokenReciever,
       uid: data.recieverId,
@@ -82,7 +85,7 @@ function PickUp({ data, navigation }) {
               onPress={handlePickUpVideo}
             />
           ) : (
-            <ButtonAction icon={'ios-call'} colorBack={'#425F57'} colorIcon={'#DEF5E5'} />
+            <ButtonAction onPress={handlePickUpVideo} icon={'ios-call'} colorBack={'#425F57'} colorIcon={'#DEF5E5'} />
           )}
         </View>
       </View>
