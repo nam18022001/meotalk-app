@@ -1,9 +1,9 @@
-import { ActivityIndicator, AppBar, IconButton, Avatar } from '@react-native-material/core';
+import { ActivityIndicator, AppBar, Avatar, IconButton } from '@react-native-material/core';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableNativeFeedback, View } from 'react-native';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5.js';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons.js';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5.js';
 import GlobalStyles from '../Components/GlobalStyles';
 
 import useAuthContext from '../hooks/useAuthContext.js';
@@ -11,13 +11,13 @@ import useDebounce from '../hooks/useDebounce.js';
 import usePreLoadContext from '../hooks/usePreLoadContext.js';
 
 import firestore from '@react-native-firebase/firestore';
-import generatePermutation from '../hooks/usePermutation.js';
 import { TouchableWithoutFeedback } from 'react-native';
-import { toastError, toastWarning } from '../hooks/useToast.js';
-import config from '../configs/index.js';
-import { decryptAES, encryptAES } from '../functions/hash.js';
 import { makeNewConversationPrivate } from '../Services/newChatServices.js';
+import config from '../configs/index.js';
+import { encryptAES } from '../functions/hash.js';
 import { setLocalStorageKey } from '../hooks/useLocalStorage.js';
+import generatePermutation from '../hooks/usePermutation.js';
+import { toastError, toastWarning } from '../hooks/useToast.js';
 
 function NewChatPrivate({ navigation }) {
   const currentUser = useAuthContext();
