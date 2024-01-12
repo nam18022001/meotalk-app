@@ -12,7 +12,7 @@ import usePreLoadContext from '../../../hooks/usePreLoadContext';
 
 function PickUpGroup({ data, navigation }) {
   const currentUser = useAuthContext();
-  const chatRoomInfo = usePreLoadContext();
+  const { chatRoomInfo } = usePreLoadContext();
 
   const [friendsInfo, setFriendsInfo] = useState([]);
   const [groupName, setGroupName] = useState('');

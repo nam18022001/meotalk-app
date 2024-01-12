@@ -2,9 +2,9 @@ import { useContext } from 'react';
 
 import { PreLoadContext } from '../contexts/PreLoadContext';
 function usePreLoadContext() {
-  const { chatRoomInfo } = useContext(PreLoadContext);
+  const { chatRoomInfo, listPrivateInfo, countUnReadPrivate } = useContext(PreLoadContext);
 
-  return chatRoomInfo;
+  return { chatRoomInfo, listPrivateInfo, countUnReadPrivate };
 }
 
 export default usePreLoadContext;

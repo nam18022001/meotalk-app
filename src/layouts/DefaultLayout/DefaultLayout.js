@@ -8,16 +8,17 @@ import GlobalStyles from '../../Components/GlobalStyles';
 
 import Friends from '../../Views/Friends';
 import Home from '../../Views/Home';
-import NotifiCation from '../../Views/Notification';
 import Profile from '../../Views/Profile';
-import Header from './Header';
 import useAuthContext from '../../hooks/useAuthContext';
+import Header from './Header';
+import HomePrivate from '../../Views/HomePrivate';
+import usePreLoadContext from '../../hooks/usePreLoadContext';
 
 const Tab = createBottomTabNavigator();
 function DefaultLayout() {
   const currentUser = useAuthContext();
+  const { countUnReadPrivate } = usePreLoadContext();
   const [show, setShow] = useState();
-  const [title, setTitle] = useState('');
 
   useLayoutEffect(() => {
     if (currentUser) setShow(true);
@@ -44,8 +45,8 @@ function DefaultLayout() {
                 iconName = 'chatbubble-ellipses';
               } else if (route.name === 'Friends') {
                 iconName = 'ios-people-sharp';
-              } else if (route.name === 'Notification') {
-                iconName = 'md-notifications';
+              } else if (route.name === 'Secured Messages') {
+                iconName = 'lock-closed';
               } else if (route.name === 'Profile') {
                 iconName = 'ios-settings';
                 return currentUser ? (
@@ -80,8 +81,12 @@ function DefaultLayout() {
           })}
         >
           <Tab.Screen name="Messages" component={Home} />
+          <Tab.Screen
+            name="Secured Messages"
+            component={HomePrivate}
+            options={countUnReadPrivate > 0 ? { tabBarBadge: countUnReadPrivate } : null}
+          />
           <Tab.Screen name="Friends" component={Friends} />
-          <Tab.Screen name="Notification" component={NotifiCation} options={{ tabBarBadge: 5 }} />
           <Tab.Screen name="Profile" component={Profile} />
         </Tab.Navigator>
       </View>

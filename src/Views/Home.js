@@ -1,12 +1,12 @@
 import messaging from '@react-native-firebase/messaging';
 import { memo, useEffect } from 'react';
-import { FlatList, ScrollView, View } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 import ConverseItem from '../Components/ConverseItem';
 import usePreLoadContext from '../hooks/usePreLoadContext';
 
 function Home({ navigation }) {
-  const chatRoomInfo = usePreLoadContext();
+  const { chatRoomInfo } = usePreLoadContext();
   useEffect(() => {
     messaging().onNotificationOpenedApp((remoteMessage) => {
       if (remoteMessage.data.call === '') {

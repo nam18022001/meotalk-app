@@ -29,7 +29,7 @@ const screenHeight = Dimensions.get('window').height;
 
 function NewChat({ navigation }) {
   const currentUser = useAuthContext();
-  const chatRoomInfo = usePreLoadContext();
+  const { chatRoomInfo } = usePreLoadContext();
 
   const [searchValue, setSearchValue] = useState('');
   const [showSearch, setShowSearch] = useState(false);
@@ -291,6 +291,7 @@ function NewChat({ navigation }) {
                 value={searchValue}
                 autoFocus
                 onChangeText={(text) => handleInput(text)}
+                returnKeyType="search"
               />
             </View>
           </ScrollView>

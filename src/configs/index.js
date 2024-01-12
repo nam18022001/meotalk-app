@@ -1,5 +1,6 @@
 import routes from './routes';
 import configAgora from './agora';
-const config = { routes, configAgora };
+import constant from './constant';
+const config = { routes, configAgora, constant };
 
 export default config;

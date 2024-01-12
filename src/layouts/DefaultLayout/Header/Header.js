@@ -1,5 +1,6 @@
 import { AppBar, HStack, IconButton } from '@react-native-material/core';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { memo } from 'react';
 import { View } from 'react-native';
 import GlobalStyles from '../../../Components/GlobalStyles';
@@ -14,13 +15,23 @@ function Header({ title, navigation }) {
         title={title}
         trailing={(props) => (
           <HStack>
-            <IconButton
-              style={{ width: 40, height: 40, backgroundColor: GlobalStyles.colors.powderGreyOpacity }}
-              icon={(props) => <FontAwesome5 size={20} name="pen" />}
-              onPress={() => {
-                navigation.navigate('NewChat');
-              }}
-            />
+            {title === 'Secured Messages' ? (
+              <IconButton
+                style={{ width: 40, height: 40, backgroundColor: GlobalStyles.colors.powderGreyOpacity }}
+                icon={(props) => <MaterialCommunityIcons size={20} name="pen-lock" />}
+                onPress={() => {
+                  navigation.navigate('NewChatPrivate');
+                }}
+              />
+            ) : (
+              <IconButton
+                style={{ width: 40, height: 40, backgroundColor: GlobalStyles.colors.powderGreyOpacity }}
+                icon={(props) => <FontAwesome5 size={20} name="pen" />}
+                onPress={() => {
+                  navigation.navigate('NewChat');
+                }}
+              />
+            )}
           </HStack>
         )}
       />
